@@ -59,7 +59,7 @@ const static WNModel models[] = {
                                   .texture_file =
                                       "resource/goodart/pineapple.png"},
     [FRUIT_PINEAPPLE_HALF_BOTTOM] = {
-        .model_file = "resource/goodart/pineapple_half_top.obj",
+        .model_file = "resource/goodart/pineapple_half_bottom.obj",
         .texture_file = "resource/goodart/pineapple.png" }
 };
 
