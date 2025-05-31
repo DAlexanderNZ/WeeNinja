@@ -121,7 +121,7 @@ Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
 }
 
 Vector2 Flick(Vector2 from, float theta, float acceleration) {
-    printf("from.x = %f from.y = %f theta = %f acceleration = %f", from.x,
+    printf("from.x = %f from.y = %f theta = %f acceleration = %f\n", from.x,
            from.y, theta, acceleration);
     Vector2 direction = {acceleration * cos(theta), acceleration * sin(theta)};
     return Vector2Add(from, direction);
