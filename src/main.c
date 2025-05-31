@@ -170,6 +170,7 @@ int main(int argc, char **argv) {
         PollInputEvents();
         if (flicking) {
             screen = Flick(screen, flick_angle, flick_acceleration);
+            targetScreen = screen;
         } else {
             screen = Lerp2(screen, targetScreen, 0.7);
         }
