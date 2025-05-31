@@ -2,8 +2,8 @@
 #define WEENINJA_MAIN_H
 typedef enum message {
   none = 0,
-  menuPlay,
-  menuHighScore,
-  menuQuit
+  menuPlay = 1,
+  menuHighScore = 2,
+  menuQuit = 3
 }message;
 #endif
