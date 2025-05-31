@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
 
     float rot = 0.0f;
     SetTargetFPS(60);
-    Vector2 target = screen;
+    Vector2 target = {screen.x, screen.y};
     while (!WindowShouldClose()) {
         PollInputEvents();
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
