@@ -1,6 +1,9 @@
 #include "main.h"
+#include "application.h"
+#include "fruit.h"
 #include "menu.h"
 #include "message.h"
+#include "model.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
 #include <raylib.h>
@@ -124,23 +127,17 @@ int main(int argc, char **argv) {
     camera.projection = CAMERA_PERSPECTIVE;
     camera.fovy = 45.0f;
 
-    Model m = LoadModel("resource/goodart/apple.obj");
-    Texture2D tex = LoadTexture("resource/goodart/apple.png");
-    m.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tex;
-
-    Matrix xform = MatrixIdentity();
-
-    SetTargetFPS(60);
+    GameState state;
+    wn_state_init(&state);
 
     int shouldQuit = 0;
     screen = targetScreen;
 
+    float fruit_timer = 0.0f;
     while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
 
         screen = Lerp2(screen, targetScreen, 0.5);
-
-        xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
 
         BeginDrawing();
         BeginMode3D(camera);
@@ -148,14 +145,23 @@ int main(int argc, char **argv) {
         ClearBackground(WHITE);
 
         DrawSlicer(camera, screen);
+
+        fruit_timer += GetFrameTime();
+        if (fruit_timer > 1.0f) {
+            fruit_timer = 0.0f;
+            wn_spawnfruit(&state, FRUIT_APPLE);
+        }
+        
+        wn_update(&state);
+        wn_drawfruit(&state);
+
         EndMode3D();
 
         /* shouldQuit = handleMsg(menu()); */
+
+        /* menu(); */
         EndDrawing();
     }
-
-    UnloadTexture(tex);
-    UnloadModel(m);
 
     if (use_wiimote) {
         cwiid_close(wiimote);
