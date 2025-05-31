@@ -1,10 +1,10 @@
 #include "application.h"
 #include "fruit.h"
 #include "model.h"
-#include <stdlib.h>
 #include <raylib.h>
 #include <raymath.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define WEENINJA_GRAVITY 8.0f
 
@@ -21,7 +21,7 @@ void wn_spawnfruit(GameState *state, int type) {
     float yvel = ((float)rand() / (float)RAND_MAX) + 0.5f;
 
     float xpos = 2.0f * ((float)rand() / (float)RAND_MAX) - 0.5f;
-    
+
     Fruit f;
     f.position.x = 8.0f * xpos;
     f.position.y = -10.0f;
@@ -34,12 +34,11 @@ void wn_spawnfruit(GameState *state, int type) {
 
     state->fruit[state->n_fruit] = f;
     state->n_fruit++;
-    printf("spawned froot\n");
 }
 
 void wn_update(GameState *state) {
     for (int i = 0; i < state->n_fruit; i++) {
-        Fruit* f = &state->fruit[i];
+        Fruit *f = &state->fruit[i];
         if (!f->alive) {
             continue;
         }
@@ -50,7 +49,6 @@ void wn_update(GameState *state) {
         f->theta += f->omega * GetFrameTime();
 
         if (f->position.y < -10.0f) {
-            printf("killing froot\n");
             f->alive = false;
         }
     }
@@ -58,7 +56,7 @@ void wn_update(GameState *state) {
 
 void wn_drawfruit(const GameState *state) {
     for (int i = 0; i < state->n_fruit; i++) {
-        const Fruit* f = &state->fruit[i];
+        const Fruit *f = &state->fruit[i];
         if (!state->fruit[i].alive) {
             continue;
         }
@@ -67,7 +65,7 @@ void wn_drawfruit(const GameState *state) {
         Matrix xform = MatrixIdentity();
         xform = MatrixMultiply(xform, MatrixRotateZ(f->theta));
         xform = MatrixMultiply(
-                               xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
+            xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
 
         DrawMesh(m.meshes[0], m.materials[0], xform);
     }
