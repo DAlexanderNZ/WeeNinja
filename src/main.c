@@ -48,6 +48,7 @@ void handle_accel_event(struct cwiid_acc_mesg msg) {
     float acceleration = sqrt(pow(a_x, 2) + pow(a_z, 2));
 
     if (acceleration > FLICK_THRESHOLD) {
+        printf("We're flicking the fruit\n");
         flicking = true;
         flick_angle = atan2(a_z, a_x);
         flick_acceleration = acceleration;
