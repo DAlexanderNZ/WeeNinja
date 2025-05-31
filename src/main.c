@@ -19,7 +19,7 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
                       float *screen_x, float *screen_y) {
     float mid_y = ((float)(py1 + py2)) / 2.0;
     float mid_x = ((float)(px1 + px2)) / 2.0;
-    float offset_y = (CY - mid_y) / 768;
+    float offset_y = -(CY - mid_y) / 768;
     float offset_x = (CX - mid_x) / 1024;
     *screen_y = offset_y;
     *screen_x = offset_x;
