@@ -131,11 +131,18 @@ void wn_splitfruit(GameState *state, Fruit *f) {
 
     provision_fruit(state, &left);
     provision_fruit(state, &right);
+
+    if (f->type == FRUIT_PINEAPPLE) {
+        left->type = FRUIT_PINEAPPLE_HALF_TOP;
+        right->type = FRUIT_PINEAPPLE_HALF_BOTTOM;
+    } else {
+        left->type = new_type;
+        right->type = new_type;
+    }
     
     left->position = f->position;
     left->velocity.x = -8.0f;
     left->velocity.y = f->velocity.y;
-    left->type = new_type;
     left->omega = 0.0f;
     left->theta = 0.0f;
     left->alive = true;
@@ -143,7 +150,6 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     right->position = f->position;
     right->velocity.x = 8.0f;
     right->velocity.y = f->velocity.y;
-    right->type = new_type;
     right->omega = 0.0f;
     right->theta = 0.0f;
     right->alive = true;
