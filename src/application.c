@@ -36,6 +36,10 @@ void wn_spawnfruit(GameState *state, int type) {
     state->n_fruit++;
 }
 
+void wn_killfruit(GameState *state, Fruit *f) {
+    f->alive = 0;
+}
+
 void wn_update(GameState *state) {
     for (int i = 0; i < state->n_fruit; i++) {
         Fruit *f = &state->fruit[i];
