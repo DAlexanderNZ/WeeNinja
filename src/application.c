@@ -36,9 +36,7 @@ void wn_spawnfruit(GameState *state, int type) {
     state->n_fruit++;
 }
 
-void wn_killfruit(GameState *state, Fruit *f) {
-    f->alive = 0;
-}
+void wn_killfruit(GameState *state, Fruit *f) { f->alive = 0; }
 
 void wn_update(GameState *state) {
     for (int i = 0; i < state->n_fruit; i++) {
@@ -85,7 +83,7 @@ void wn_fruit_pick(GameState *state, Ray ray) {
         const float dist_sq = Vector3DistanceSqr(
             in_plane, (Vector3){f->position.x, f->position.y, -20.0f});
         if (dist_sq < 0.05) {
-            wn_fruit_kill(state, f);
+            wn_killfruit(state, f);
         }
     }
 }
