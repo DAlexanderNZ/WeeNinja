@@ -39,7 +39,14 @@ const static WNModel models[] = {
     [FRUIT_APPLE] = {.model_file = "resource/goodart/apple.obj",
                      .texture_file = "resource/goodart/apple.png"},
     [FRUIT_ORANGE] = {.model_file = "resource/goodart/orange.obj",
-                      .texture_file = "resource/goodart/orange.png"}};
+                      .texture_file = "resource/goodart/orange.png"},
+    [FRUIT_KIWIFRUIT] = {.model_file = "resource/goodart/kiwifruit.obj",
+                         .texture_file = "resource/goodart/kiwifruit.png"},
+    [FRUIT_PINEAPPLE] = {
+        .model_file = "resource/goodart/pineapple.obj",
+        .texture_file = "resource/goodart/pineapple.png"
+    }
+};
 
 static LazyMesh loaded_meshes[_N_FRUIT] = {
     [FRUIT_APPLE] = {.status = NOT_LOADED, .data = {.nuh = 0}},
