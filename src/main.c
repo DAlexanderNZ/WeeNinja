@@ -1,6 +1,8 @@
+#include "menu.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
-#include <stdio.h>
+#include <raylib.h>
+#include <raymath.h>
 #include <unistd.h>
 
 #define FOV_X 45.0
@@ -32,13 +34,16 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
 
     for (int i = 0; i < CWIID_IR_SRC_COUNT; i++) {
         if (srcs[i].valid) {
-            if (!blob_count) {
+            if (blob_count == 0) {
                 px1 = srcs[i].pos[CWIID_X];
                 py1 = srcs[i].pos[CWIID_Y];
                 blob_count++;
-            } else {
+            } else if (blob_count == 1) {
                 px2 = srcs[i].pos[CWIID_X];
                 py2 = srcs[i].pos[CWIID_Y];
+                blob_count++;
+            } else {
+                break;
             }
         }
     }
@@ -68,7 +73,27 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
     }
 }
 
-int main(int argc, char *argv[]) {
+void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
+                    union cwiid_mesg mesg_array[], struct timespec *timestamp) {
+    for (int i = 0; i < mesg_count; i++) {
+        union cwiid_mesg msg = mesg_array[i];
+        switch (msg.type) {
+        case CWIID_MESG_BTN:
+            print_buttons(msg.btn_mesg.buttons);
+            break;
+        case CWIID_MESG_IR:
+            print_ir_event(msg.ir_mesg.src);
+            break;
+        default:
+            break;
+        }
+        if (mesg_array[i].type == CWIID_MESG_BTN) {
+            print_buttons(mesg_array[i].btn_mesg.buttons);
+        }
+    }
+}
+
+int main(int argc, char **argv) {
     cwiid_wiimote_t *wiimote;
     bdaddr_t bdaddr = *BDADDR_ANY;
     if (argc > 1) {
@@ -96,6 +121,52 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
+    InitWindow(640, 480, "WeeNinja");
+
+    Camera3D camera = {0};
+    camera.position.x = 0.0f;
+    camera.position.y = 0.0f;
+    camera.position.z = 1.0f;
+
+    camera.target.x = 0.0f;
+    camera.target.y = 0.0f;
+    camera.target.z = -1.0f;
+
+    camera.up.x = 0.0f;
+    camera.up.y = 1.0f;
+    camera.up.z = 0.0f;
+
+    camera.projection = CAMERA_PERSPECTIVE;
+    camera.fovy = 45.0f;
+
+    Model m = LoadModel("resource/goodart/apple.obj");
+    Texture2D tex = LoadTexture("resource/goodart/apple.png");
+    m.materials[0].maps[MATERIAL_MAP_DIFFUSE].texture = tex;
+
+    Matrix xform = MatrixIdentity();
+
+    float rot = 0.0f;
+
+    while (!WindowShouldClose()) {
+        PollInputEvents();
+
+        rot += 0.5f * GetFrameTime();
+        xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
+        xform = MatrixMultiply(MatrixRotateY(rot), xform);
+
+        BeginDrawing();
+        BeginMode3D(camera);
+        ClearBackground(WHITE);
+
+        DrawMesh(m.meshes[0], m.materials[0], xform);
+
+        EndMode3D();
+
+        /* menu(); */
+        EndDrawing();
+
+        SwapScreenBuffer();
+    }
     cwiid_close(wiimote);
     return 0;
 }
