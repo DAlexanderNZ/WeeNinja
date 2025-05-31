@@ -9,6 +9,11 @@ typedef struct {
     float y;
 } pos2d;
 
+#define FOV_X 45.0
+#define FOV_Y 45.0
+#define CY 384.0
+#define CX 512.0
+
 void print_buttons(uint16_t buttons) {
     printf("Buttons pressed:");
     if (buttons & CWIID_BTN_LEFT)
@@ -38,11 +43,15 @@ void print_buttons(uint16_t buttons) {
 
 void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
                       int *screen_x, int *screen_y, float *distance) {
-    int dx = abs(px1 - px2);
-    int dy = abs(py1 - py2);
-    float theta_x = ((float)dx) / 1024.0 * M_PI_4;
-    float z = 20.0 / (2.0 * tan(theta_x / 2.0));
-    *distance = z;
+
+    float mid_y =
+        ((float)(py1 + py2)) / 2.0 +
+        30; // + 30 = manual offset since you are typically above the screen
+    float mid_x = ((float)(px1 + px2)) / 2.0;
+    float offset_y = (CY - mid_y) / 768;
+    float offset_x = (CX - mid_x) / 1024;
+    *screen_y = (int)(offset_y + 0.5);
+    *screen_x = (int)(offset_x + 0.5);
 }
 
 void print_ir_event(struct cwiid_ir_src srcs[]) {
@@ -69,7 +78,7 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
     }
     if (blob_count) {
         ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y, &distance);
-        printf("You are %f cm from the sensors", distance);
+        printf("Screen space x = %d, y = %d", screen_x, screen_y);
     }
 }
 
