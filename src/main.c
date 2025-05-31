@@ -22,10 +22,17 @@ Vector2 targetScreen = {320, 240};
 struct acc_cal wm_cal;
 int flicking = false;
 Vector2 flick_direction = {0.0, 0.0};
-
+Vector2 shot_start = {0.0, 0.0};
+int shooting = 0;
 #define ALPHA 0.6
 
-void print_buttons(uint16_t buttons) {}
+void print_buttons(uint16_t buttons) {
+    switch (buttons) {
+    case CWIID_BTN_B:
+        shot_start = targetScreen;
+        shooting = 1;
+    }
+}
 
 void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
                       Vector2 *output_screen_coords) {
@@ -39,23 +46,7 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
     output_screen_coords->y = 240.0f + offset_y * 480.0f;
 }
 
-void handle_accel_event(struct cwiid_acc_mesg msg) {
-
-    float a_x = ((float)msg.acc[CWIID_X] - wm_cal.zero[CWIID_X]) /
-                (wm_cal.one[CWIID_X] - wm_cal.zero[CWIID_X]);
-
-    float a_z = ((float)msg.acc[CWIID_Z] - wm_cal.zero[CWIID_Z]) /
-                (wm_cal.one[CWIID_Z] - wm_cal.zero[CWIID_Z]);
-    float acceleration = sqrt(pow(a_x, 2) + pow(a_z, 2));
-
-    if (acceleration > FLICK_THRESHOLD) {
-        printf("We're flicking the fruit\n");
-        flicking = true;
-        flick_direction = (Vector2){a_z, a_x};
-    } else {
-        flicking = false;
-    }
-}
+void handle_accel_event(struct cwiid_acc_mesg msg) {}
 
 void track_ir_event(struct cwiid_ir_src srcs[]) {
     uint16_t px1 = 0;
@@ -89,7 +80,7 @@ void DrawSlicer(Camera camera, Vector2 at) {
     float t = -ray.position.z / ray.direction.z;
     Vector3 OnZ0Plane =
         Vector3Add(ray.position, Vector3Scale(ray.direction, t));
-    DrawSphere(OnZ0Plane, 0.1, BLUE);
+    DrawSphere(OnZ0Plane, 0.1, (Color){0, 0, 255, 85});
 }
 
 void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
@@ -115,11 +106,6 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
 Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
     return (Vector2){from.x + alpha * (to.x - from.x),
                      from.y + alpha * (to.y - from.y)};
-}
-
-Vector2 Flick(Vector2 from, Vector2 acceleration) {
-
-    return Vector2Add(from, acceleration);
 }
 
 int main(int argc, char **argv) {
@@ -169,11 +155,12 @@ int main(int argc, char **argv) {
     float fruit_timer = 0.0f;
     while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
-        if (flicking) {
-            screen = Flick(screen, flick_direction);
-            targetScreen = screen;
-        } else {
-            screen = Lerp2(screen, targetScreen, 0.7);
+
+        screen = Lerp2(screen, targetScreen, 0.7);
+
+        if (shooting) {
+            Ray ray = GetScreenToWorldRay(shot_start, camera);
+            wn_fruit_pick(&state, ray);
         }
 
         BeginDrawing();

@@ -70,3 +70,18 @@ void wn_drawfruit(const GameState *state) {
         DrawMesh(m.meshes[0], m.materials[0], xform);
     }
 }
+
+void wn_fruit_pick(GameState *state, Ray ray) {
+    const float z_plane = -20.0f;
+    for (int i = 0; i < state->n_fruit; i++) {
+        float t = (z_plane - ray.position.z) / ray.direction.z;
+        Vector3 in_plane =
+            Vector3Add(ray.position, Vector3Scale(ray.direction, t));
+        const Fruit *f = &state->fruit[i];
+        const float dist_sq = Vector3DistanceSqr(
+            in_plane, (Vector3){f->position.x, f->position.y, -20.0f});
+        if (dist_sq < 0.05) {
+            wn_fruit_kill(state, f);
+        }
+    }
+}

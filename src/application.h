@@ -34,9 +34,10 @@ typedef struct GameState {
 } GameState;
 
 void wn_state_init(GameState *state);
-void wn_update(GameState* state);
+void wn_update(GameState *state);
 void wn_spawnfruit(GameState *state, int type);
 void wn_killfruit(GameState *state, Fruit *f);
 void wn_drawfruit(const GameState *state);
+void wn_fruit_pick(GameState *state, Ray ray);
 
 #endif
