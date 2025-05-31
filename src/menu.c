@@ -31,7 +31,7 @@ int menu() {
         buttons[i] = drawButton(menuButtons[i]);
     }
     //Check for mouse click on button
-    if (IsMouseButtonDown(3)) {
+    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
         Vector2 mPos = GetMousePosition();
         if (CheckCollisionPointRec(mPos, buttons[0])) {
             m = menuPlay;
