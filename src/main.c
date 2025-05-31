@@ -31,10 +31,30 @@ void print_buttons(uint16_t buttons) {
     printf("\n");
 }
 
+void print_ir_event(struct cwiid_ir_src srcs[]) {
+    for (int i = 0; i < CWIID_IR_SRC_COUNT; i++) {
+        if (srcs[i].valid) {
+            printf("IR BLOB %d: x = %d, y = %d\n", i, srcs[i].pos[CWIID_X],
+                   srcs[i].pos[CWIID_Y]);
+        }
+    }
+}
+
 void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
                     union cwiid_mesg mesg_array[], struct timespec *timestamp) {
     printf("Got a callback!\n");
     for (int i = 0; i < mesg_count; i++) {
+        union cwiid_mesg msg = mesg_array[i];
+        switch (msg.type) {
+        case CWIID_MESG_BTN:
+            print_buttons(msg.btn_mesg.buttons);
+            break;
+        case CWIID_MESG_IR:
+            print_ir_event(msg.ir_mesg.src);
+            break;
+        default:
+            break;
+        }
         if (mesg_array[i].type == CWIID_MESG_BTN) {
             print_buttons(mesg_array[i].btn_mesg.buttons);
         }
