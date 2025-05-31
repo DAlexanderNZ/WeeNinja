@@ -1,3 +1,4 @@
+#include "main.h"
 #include "menu.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
@@ -70,6 +71,22 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
             print_buttons(mesg_array[i].btn_mesg.buttons);
         }
     }
+    }*/
+
+int handleMsg(message msg) {
+switch (msg) {
+   case 0:
+       break;
+   case 1:
+       //Call 3d game
+       break;
+   case 2:
+       //highscores
+       break;
+   case 3:
+       return 1;
+   }
+   return 0;
 }
 
 int main(int argc, char **argv) {
@@ -126,7 +143,9 @@ int main(int argc, char **argv) {
 
     float rot = 0.0f;
 
-    while (!WindowShouldClose()) {
+    int shouldQuit = 0;
+
+    while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
 
         rot += 0.5f * GetFrameTime();
@@ -141,7 +160,7 @@ int main(int argc, char **argv) {
 
         EndMode3D();
 
-        /* menu(); */
+        shouldQuit = handleMsg(menu());
         EndDrawing();
 
         SwapScreenBuffer();
