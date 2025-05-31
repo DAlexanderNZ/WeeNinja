@@ -1,8 +1,13 @@
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+typedef struct {
+    float x;
+    float y;
+} pos2d;
 
 void print_buttons(uint16_t buttons) {
     printf("Buttons pressed:");
@@ -31,12 +36,40 @@ void print_buttons(uint16_t buttons) {
     printf("\n");
 }
 
+void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
+                      int *screen_x, int *screen_y, float *distance) {
+    int dx = abs(px1 - px2);
+    int dy = abs(py1 - py2);
+    float theta_x = ((float)dx) / 1024.0 * M_PI_4;
+    float z = 20.0 / (2.0 * tan(theta_x / 2.0));
+    *distance = z;
+}
+
 void print_ir_event(struct cwiid_ir_src srcs[]) {
+    int screen_x = 0;
+    int screen_y = 0;
+    float distance = 0.0;
+    uint16_t px1 = 0;
+    uint16_t px2 = 0;
+    uint16_t py1 = 0;
+    uint16_t py2 = 0;
+    int blob_count = 0;
+
     for (int i = 0; i < CWIID_IR_SRC_COUNT; i++) {
         if (srcs[i].valid) {
-            printf("IR BLOB %d: x = %d, y = %d\n", i, srcs[i].pos[CWIID_X],
-                   srcs[i].pos[CWIID_Y]);
+            if (!blob_count) {
+                px1 = srcs[i].pos[CWIID_X];
+                py1 = srcs[i].pos[CWIID_Y];
+                blob_count++;
+            } else {
+                px2 = srcs[i].pos[CWIID_X];
+                py2 = srcs[i].pos[CWIID_Y];
+            }
         }
+    }
+    if (blob_count) {
+        ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y, &distance);
+        printf("You are %f cm from the sensors", distance);
     }
 }
 
