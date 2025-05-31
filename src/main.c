@@ -11,17 +11,22 @@
 #define CX 512.0
 
 Vector2 screen = {320, 240};
+Vector2 targetScreen = {320, 240};
+
 #define ALPHA 0.6
+
 void print_buttons(uint16_t buttons) {}
 
 void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
-                      Vector2 *screen) {
+                      Vector2 *output_screen_coords) {
     float mid_y = ((float)(py1 + py2)) / 2.0;
     float mid_x = ((float)(px1 + px2)) / 2.0;
-    float offset_y = -(CY - mid_y) / 768;
-    float offset_x = (CX - mid_x) / 1024;
-    screen->x = 320 + offset_x * 640;
-    screen->y = 240 + offset_y * 480;
+
+    float offset_y = -(CY - mid_y) / 768.0f;
+    float offset_x = (CX - mid_x) / 1024.0f;
+
+    output_screen_coords->x = 320.0f + offset_x * 640.0f;
+    output_screen_coords->y = 240.0f + offset_y * 480.0f;
 }
 
 void print_ir_event(struct cwiid_ir_src srcs[]) {
@@ -47,7 +52,8 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
         }
     }
     if (blob_count == 2) {
-        ir_to_real_space(px1, py1, px2, py2, &screen);
+
+        ir_to_real_space(px1, py1, px2, py2, &targetScreen);
     }
 }
 
@@ -65,25 +71,17 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
         default:
             break;
         }
-        if (mesg_array[i].type == CWIID_MESG_BTN) {
-            print_buttons(mesg_array[i].btn_mesg.buttons);
-        }
     }
-}
 
-#define INV_SQRT2 0.414213562373
-void DrawSlicer(Camera camera, Vector2 at) {
-
-    Ray ray = GetScreenToWorldRay(at, camera);
-    // project the ray direction onto the z = 0 plane from the ray position
     float t = -ray.position.z / ray.direction.z;
     Vector3 OnZ0Plane =
         Vector3Add(ray.position, Vector3Scale(ray.direction, t));
     DrawSphere(OnZ0Plane, 0.1, BLUE);
 }
 
-Vector2 Chase(Vector2 from, Vector2 to) {
-    return Vector2Scale(Vector2Add(from, to), 0.5);
+Vector2 Lerp(Vector2 from, Vector2 to, float alpha) {
+    return (Vector2){from.x + alpha * (to.x - from.x),
+                     from.y + alpha * (to.y - from.y)};
 }
 
 int main(int argc, char **argv) {
@@ -91,40 +89,33 @@ int main(int argc, char **argv) {
     int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
     printf("Using wiimote: %d\n", use_wiimote);
     if (use_wiimote) {
-
         bdaddr_t bdaddr = *BDADDR_ANY;
 
         wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
         if (!wiimote) {
             fprintf(stderr, "Unable to connect\n");
+            return 1; // Exit on failure to connect
         }
 
         if (cwiid_set_mesg_callback(wiimote, &cwiid_callback)) {
             fprintf(stderr, "Unable to set callback\n");
             cwiid_close(wiimote);
+            return 1;
         }
 
         if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
             fprintf(stderr, "Unable to set report mode\n");
             cwiid_close(wiimote);
+            return 1;
         }
     }
 
     InitWindow(640, 480, "WeeNinja");
 
     Camera3D camera = {0};
-    camera.position.x = 0.0f;
-    camera.position.y = 0.0f;
-    camera.position.z = 1.0f;
-
-    camera.target.x = 0.0f;
-    camera.target.y = 0.0f;
-    camera.target.z = -1.0f;
-
-    camera.up.x = 0.0f;
-    camera.up.y = 1.0f;
-    camera.up.z = 0.0f;
-
+    camera.position = (Vector3){0.0f, 0.0f, 1.0f};
+    camera.target = (Vector3){0.0f, 0.0f, -1.0f};
+    camera.up = (Vector3){0.0f, 1.0f, 0.0f};
     camera.projection = CAMERA_PERSPECTIVE;
     camera.fovy = 45.0f;
 
@@ -134,11 +125,15 @@ int main(int argc, char **argv) {
 
     Matrix xform = MatrixIdentity();
 
-    float rot = 0.0f;
     SetTargetFPS(60);
+
+    screen = targetScreen;
 
     while (!WindowShouldClose()) {
         PollInputEvents();
+
+        screen = Lerp(screen, targetScreen, 0.5);
+
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
 
         BeginDrawing();
@@ -146,19 +141,20 @@ int main(int argc, char **argv) {
 
         ClearBackground(WHITE);
 
-        /* DrawMesh(m.meshes[0], m.materials[0], xform); */
-
         DrawSlicer(camera, screen);
         EndMode3D();
 
         /* menu(); */
         EndDrawing();
-
-        SwapScreenBuffer();
     }
+
+    UnloadTexture(tex);
+    UnloadModel(m);
+
     if (use_wiimote) {
         cwiid_close(wiimote);
     }
 
+    CloseWindow();
     return 0;
 }
