@@ -79,11 +79,12 @@ void wn_fruit_pick(GameState *state, Ray ray) {
         float t = (z_plane - ray.position.z) / ray.direction.z;
         Vector3 in_plane =
             Vector3Add(ray.position, Vector3Scale(ray.direction, t));
-        const Fruit *f = &state->fruit[i];
+        Fruit *f = &state->fruit[i];
         const float dist_sq = Vector3DistanceSqr(
             in_plane, (Vector3){f->position.x, f->position.y, -20.0f});
         if (dist_sq < 1) {
-            wn_killfruit(state, f);
+            /* wn_killfruit(state, f); */
+            wn_splitfruit(state, f);
         }
     }
 }
@@ -91,6 +92,7 @@ void wn_fruit_pick(GameState *state, Ray ray) {
 void wn_splitfruit(GameState *state, Fruit *f)
 {
     int new_type = -1;
+    f->alive = false;
     switch (f->type) {
         case FRUIT_APPLE:
             new_type = FRUIT_APPLE_HALF;
