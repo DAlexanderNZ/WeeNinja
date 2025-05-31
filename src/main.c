@@ -186,7 +186,7 @@ int main(int argc, char **argv) {
         fruit_timer += GetFrameTime();
         if (fruit_timer > 1.0f) {
             fruit_timer = 0.0f;
-            wn_spawnfruit(&state, rand() % 4);
+            wn_spawnfruit(&state, rand() % _N_FRUIT);
         }
 
         wn_update(&state);

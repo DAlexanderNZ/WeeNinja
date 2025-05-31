@@ -20,6 +20,7 @@
  */
 
 #include "model.h"
+#include "fruit.h"
 #include <raylib.h>
 
 typedef struct LazyMesh {
@@ -42,10 +43,24 @@ const static WNModel models[] = {
                       .texture_file = "resource/goodart/orange.png"},
     [FRUIT_KIWIFRUIT] = {.model_file = "resource/goodart/kiwifruit.obj",
                          .texture_file = "resource/goodart/kiwifruit.png"},
-    [FRUIT_PINEAPPLE] = {
-        .model_file = "resource/goodart/pineapple.obj",
-        .texture_file = "resource/goodart/pineapple.png"
-    }
+    [FRUIT_PINEAPPLE] = {.model_file = "resource/goodart/pineapple.obj",
+                         .texture_file = "resource/goodart/pineapple.png"},
+    [FRUIT_APPLE_HALF] = {.model_file = "resource/goodart/apple_half.obj",
+                          .texture_file =
+                              "resource/goodart/Apple_Half_Texture.png"},
+    [FRUIT_ORANGE_HALF] = {.model_file = "resource/goodart/orange_half.obj",
+                           .texture_file = "resource/goodart/orange_split.png"},
+    [FRUIT_KIWIFRUIT_HALF] = {.model_file =
+                                  "resource/goodart/kiwifruit_half.obj",
+                              .texture_file =
+                                  "resource/goodart/kiwifruit_half.png"},
+    [FRUIT_PINEAPPLE_HALF_TOP] = {.model_file =
+                                      "resource/goodart/pineapple_half_top.obj",
+                                  .texture_file =
+                                      "resource/goodart/pineapple.png"},
+    [FRUIT_PINEAPPLE_HALF_BOTTOM] = {
+        .model_file = "resource/goodart/pineapple_half_top.obj",
+        .texture_file = "resource/goodart/pineapple.png" }
 };
 
 static LazyMesh loaded_meshes[_N_FRUIT] = {
