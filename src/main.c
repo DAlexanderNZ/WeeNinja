@@ -139,6 +139,8 @@ int main(int argc, char **argv) {
     InitWindow(640, 480, "WeeNinja");
 
     ToggleFullscreen();
+    screen.x = (float)GetScreenWidth();
+    screen.y = (float)GetScreenHeight();
     Camera3D camera = {0};
     camera.position = (Vector3){0.0f, 0.0f, 1.0f};
     camera.target = (Vector3){0.0f, 0.0f, -1.0f};
