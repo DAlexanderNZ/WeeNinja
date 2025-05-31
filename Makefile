@@ -1,7 +1,7 @@
 # tool macros
 CC ?= # FILL: the compiler
 CXX ?= # FILL: the compiler
-CFLAGS := # FILL: compile flags
+CFLAGS := $$(pkg-config --cflags raylib) $$(pkg-config --cflags cwiid) $$(pkg-config --libs cwiid) -lm $$(pkg-config --libs raylib) # FILL: compile flags
 CXXFLAGS := # FILL: compile flags
 DBGFLAGS := -g
 COBJFLAGS := $(CFLAGS) -c
@@ -37,7 +37,7 @@ default: makedir all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	@$(CC) -o $@ $(OBJ) $(CFLAGS) `pkg-config --libs raylib`
+	@$(CC) -o $@ $(OBJ) $(CFLAGS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	@$(CC) $(COBJFLAGS) -o $@ $<

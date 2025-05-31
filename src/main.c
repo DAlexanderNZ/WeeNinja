@@ -1,11 +1,126 @@
-#include <stdio.h>
+#include "menu.h"
+#include <bluetooth/bluetooth.h>
+#include <cwiid.h>
 #include <raylib.h>
 #include <raymath.h>
+#include <unistd.h>
 
-#include "menu.h"
+#define FOV_X 45.0
+#define FOV_Y 45.0
+#define CY 384.0
+#define CX 512.0
 
-int main(int argc, char **argv)
-{
+float screen_x = 0;
+float screen_y = 0;
+
+void print_buttons(uint16_t buttons) {}
+
+void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
+                      float *screen_x, float *screen_y) {
+    float mid_y = ((float)(py1 + py2)) / 2.0;
+    float mid_x = ((float)(px1 + px2)) / 2.0;
+    float offset_y = (CY - mid_y) / 768;
+    float offset_x = (CX - mid_x) / 1024;
+    *screen_y = offset_y;
+    *screen_x = offset_x;
+}
+
+void print_ir_event(struct cwiid_ir_src srcs[]) {
+    uint16_t px1 = 0;
+    uint16_t px2 = 0;
+    uint16_t py1 = 0;
+    uint16_t py2 = 0;
+    int blob_count = 0;
+
+    for (int i = 0; i < CWIID_IR_SRC_COUNT; i++) {
+        if (srcs[i].valid) {
+            if (blob_count == 0) {
+                px1 = srcs[i].pos[CWIID_X];
+                py1 = srcs[i].pos[CWIID_Y];
+                blob_count++;
+            } else if (blob_count == 1) {
+                px2 = srcs[i].pos[CWIID_X];
+                py2 = srcs[i].pos[CWIID_Y];
+                blob_count++;
+            } else {
+                break;
+            }
+        }
+    }
+    if (blob_count == 2) {
+        ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y);
+        printf("Screen space x = %f, y = %f", screen_x, screen_y);
+    }
+}
+
+void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
+                    union cwiid_mesg mesg_array[], struct timespec *timestamp) {
+    for (int i = 0; i < mesg_count; i++) {
+        union cwiid_mesg msg = mesg_array[i];
+        switch (msg.type) {
+        case CWIID_MESG_BTN:
+            print_buttons(msg.btn_mesg.buttons);
+            break;
+        case CWIID_MESG_IR:
+            print_ir_event(msg.ir_mesg.src);
+            break;
+        default:
+            break;
+        }
+        if (mesg_array[i].type == CWIID_MESG_BTN) {
+            print_buttons(mesg_array[i].btn_mesg.buttons);
+        }
+    }
+}
+
+void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
+                    union cwiid_mesg mesg_array[], struct timespec *timestamp) {
+    for (int i = 0; i < mesg_count; i++) {
+        union cwiid_mesg msg = mesg_array[i];
+        switch (msg.type) {
+        case CWIID_MESG_BTN:
+            print_buttons(msg.btn_mesg.buttons);
+            break;
+        case CWIID_MESG_IR:
+            print_ir_event(msg.ir_mesg.src);
+            break;
+        default:
+            break;
+        }
+        if (mesg_array[i].type == CWIID_MESG_BTN) {
+            print_buttons(mesg_array[i].btn_mesg.buttons);
+        }
+    }
+}
+
+int main(int argc, char **argv) {
+    cwiid_wiimote_t *wiimote;
+    bdaddr_t bdaddr = *BDADDR_ANY;
+    if (argc > 1) {
+        if (str2ba(argv[1], &bdaddr)) {
+            fprintf(stderr, "Invalid Bluetooth address\n");
+            return 1;
+        }
+    }
+
+    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
+    if (!wiimote) {
+        fprintf(stderr, "Unable to connect\n");
+        return 1;
+    }
+
+    if (cwiid_set_mesg_callback(wiimote, &cwiid_callback)) {
+        fprintf(stderr, "Unable to set callback\n");
+        cwiid_close(wiimote);
+        return 1;
+    }
+
+    if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
+        fprintf(stderr, "Unable to set report mode\n");
+        cwiid_close(wiimote);
+        return 1;
+    }
+
     InitWindow(640, 480, "WeeNinja");
 
     Camera3D camera = {0};
@@ -31,7 +146,7 @@ int main(int argc, char **argv)
     Matrix xform = MatrixIdentity();
 
     float rot = 0.0f;
-    
+
     while (!WindowShouldClose()) {
         PollInputEvents();
 
@@ -52,6 +167,6 @@ int main(int argc, char **argv)
 
         SwapScreenBuffer();
     }
-    
+    cwiid_close(wiimote);
     return 0;
 }
