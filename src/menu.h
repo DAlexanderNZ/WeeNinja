@@ -1,7 +1,7 @@
 #include <raylib.h>
-#ifndef WEENINJIA_MENU_H
-#define WEENINJIA_MENU_H
-void menu ();
+#ifndef WEENINJA_MENU_H
+#define WEENINJA_MENU_H
+int menu ();
 typedef struct MenuButton{
     Vector2 pos;
     Vector2 size;
