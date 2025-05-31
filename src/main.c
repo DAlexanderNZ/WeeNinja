@@ -51,7 +51,9 @@ void handle_accel_event(struct cwiid_acc_mesg msg) {
         printf("We're flicking the fruit\n");
         flicking = true;
         flick_angle = atan2(a_z, a_x);
+        printf("theta = %f\n", flick_angle);
         flick_acceleration = acceleration;
+        printf("accel = %f\n", flick_acceleration);
     } else {
         flicking = false;
     }
