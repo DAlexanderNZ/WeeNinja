@@ -8,7 +8,6 @@
 #include <cwiid.h>
 #include <raylib.h>
 #include <raymath.h>
-#include <stdlib.h>
 #include <unistd.h>
 
 #define FOV_X 45.0
@@ -184,8 +183,7 @@ int main(int argc, char **argv) {
         fruit_timer += GetFrameTime();
         if (fruit_timer > 1.0f) {
             fruit_timer = 0.0f;
-            int fruit = rand() % 5;
-            wn_spawnfruit(&state, fruit);
+            wn_spawnfruit(&state, FRUIT_APPLE);
         }
 
         wn_update(&state);
