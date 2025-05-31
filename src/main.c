@@ -7,12 +7,16 @@
 
 #define FOV_X 45.0
 #define FOV_Y 45.0
+#define FLICK_THRESHOLD 3.0
 #define CY 384.0
 #define CX 512.0
 
 Vector2 screen = {320, 240};
 Vector2 targetScreen = {320, 240};
-
+struct acc_cal wm_cal;
+int flicking = false;
+float flick_angle = 0.0;
+float flick_acceleration = 0.0;
 #define ALPHA 0.6
 
 void print_buttons(uint16_t buttons) {}
@@ -29,7 +33,25 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
     output_screen_coords->y = 240.0f + offset_y * 480.0f;
 }
 
-void print_ir_event(struct cwiid_ir_src srcs[]) {
+void handle_accel_event(struct cwiid_acc_mesg msg) {
+
+    float a_x = ((float)msg.acc[CWIID_X] - wm_cal.zero[CWIID_X]) /
+                (wm_cal.one[CWIID_X] - wm_cal.zero[CWIID_X]);
+
+    float a_z = ((float)msg.acc[CWIID_Z] - wm_cal.zero[CWIID_Z]) /
+                (wm_cal.one[CWIID_Z] - wm_cal.zero[CWIID_Z]);
+    float acceleration = sqrt(pow(a_x, 2) + pow(a_z, 2));
+
+    if (acceleration > FLICK_THRESHOLD) {
+        flicking = true;
+        flick_angle = atan2(a_z, a_x);
+        flick_acceleration = acceleration;
+    } else {
+        flicking = false;
+    }
+}
+
+void track_ir_event(struct cwiid_ir_src srcs[]) {
     uint16_t px1 = 0;
     uint16_t px2 = 0;
     uint16_t py1 = 0;
@@ -73,7 +95,10 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
             print_buttons(msg.btn_mesg.buttons);
             break;
         case CWIID_MESG_IR:
-            print_ir_event(msg.ir_mesg.src);
+            track_ir_event(msg.ir_mesg.src);
+            break;
+        case CWIID_MESG_ACC:
+            handle_accel_event(msg.acc_mesg);
             break;
         default:
             break;
@@ -84,6 +109,11 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
 Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
     return (Vector2){from.x + alpha * (to.x - from.x),
                      from.y + alpha * (to.y - from.y)};
+}
+
+Vector2 Flick(Vector2 from, float theta, float acceleration) {
+    Vector2 direction = {acceleration * cos(theta), acceleration * sin(theta)};
+    return Vector2Add(from, direction);
 }
 
 int main(int argc, char **argv) {
@@ -105,11 +135,13 @@ int main(int argc, char **argv) {
             return 1;
         }
 
-        if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
+        if (cwiid_set_rpt_mode(wiimote,
+                               CWIID_RPT_BTN | CWIID_RPT_IR | CWIID_RPT_ACC)) {
             fprintf(stderr, "Unable to set report mode\n");
             cwiid_close(wiimote);
             return 1;
         }
+        cwiid_get_acc_cal(wiimote, CWIID_EXT_NONE, &wm_cal)
     }
 
     InitWindow(640, 480, "WeeNinja");
@@ -133,8 +165,11 @@ int main(int argc, char **argv) {
 
     while (!WindowShouldClose()) {
         PollInputEvents();
-
-        screen = Lerp2(screen, targetScreen, 0.7);
+        if (flicking) {
+            screen = Flick(screen, flick_angle, flick_acceleration);
+        } else {
+            screen = Lerp2(screen, targetScreen, 0.7);
+        }
 
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
 
