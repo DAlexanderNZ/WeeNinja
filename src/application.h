@@ -23,7 +23,7 @@
 #define WEENINJA_APPLICATION_H
 
 #ifndef WEENINJA_MAX_FRUIT
-#define WEENINJA_MAX_FRUIT 128
+#define WEENINJA_MAX_FRUIT 1024
 #endif
 
 #include "fruit.h"
@@ -39,5 +39,6 @@ void wn_spawnfruit(GameState *state, int type);
 void wn_killfruit(GameState *state, Fruit *f);
 void wn_drawfruit(const GameState *state);
 void wn_fruit_pick(GameState *state, Ray ray);
+void wn_splitfruit(GameState* state, Fruit *f);
 
 #endif

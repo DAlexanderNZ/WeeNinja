@@ -87,3 +87,46 @@ void wn_fruit_pick(GameState *state, Ray ray) {
         }
     }
 }
+
+void wn_splitfruit(GameState *state, Fruit *f)
+{
+    int new_type = -1;
+    switch (f->type) {
+        case FRUIT_APPLE:
+            new_type = FRUIT_APPLE_HALF;
+            break;
+        case FRUIT_PINEAPPLE:
+            new_type = FRUIT_PINEAPPLE_HALF_TOP;
+            break;
+        case FRUIT_KIWIFRUIT:
+            new_type = FRUIT_KIWIFRUIT_HALF;
+            break;
+        case FRUIT_ORANGE:
+            new_type = FRUIT_ORANGE_HALF;
+            break;
+
+        default:
+            return;
+    }
+
+    Fruit *left = &state->fruit[state->n_fruit];
+    state->n_fruit++;
+    Fruit *right = &state->fruit[state->n_fruit];
+    state->n_fruit++;
+
+    left->position = f->position;
+    left->velocity.x = -8.0f;
+    left->velocity.y = 0;
+    left->type = new_type;
+    left->omega = 0.0f;
+    left->theta = 0.0f;
+    left->alive = true;
+
+    right->position = f->position;
+    right->velocity.x = 8.0f;
+    right->velocity.y = 0;
+    right->type = new_type;
+    right->omega = 0.0f;
+    right->theta = 0.0f;
+    right->alive = true;
+}
