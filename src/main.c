@@ -72,32 +72,39 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
     }
 }
 
+#define INV_SQRT2 0.414213562373
+void DrawSlicer(Camera camera) {
+    Vector2 screen = {320 + screen_x * 640, 240 + screen_y * 480};
+    Ray ray = GetScreenToWorldRay(screen, camera);
+    // project the ray direction onto the z = 0 plane from the ray position
+    float t = -ray.position.z / ray.direction.z;
+    Vector3 OnZ0Plane =
+        Vector3Add(ray.position, Vector3Scale(ray.direction, t));
+    DrawSphere(OnZ0Plane, 0.1, BLUE);
+}
+
 int main(int argc, char **argv) {
     cwiid_wiimote_t *wiimote;
-    bdaddr_t bdaddr = *BDADDR_ANY;
-    if (argc > 1) {
-        if (str2ba(argv[1], &bdaddr)) {
-            fprintf(stderr, "Invalid Bluetooth address\n");
-            return 1;
+    int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
+    printf("Using wiimote: %d\n", use_wiimote);
+    if (use_wiimote) {
+
+        bdaddr_t bdaddr = *BDADDR_ANY;
+
+        wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
+        if (!wiimote) {
+            fprintf(stderr, "Unable to connect\n");
         }
-    }
 
-    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
-    if (!wiimote) {
-        fprintf(stderr, "Unable to connect\n");
-        return 1;
-    }
+        if (cwiid_set_mesg_callback(wiimote, &cwiid_callback)) {
+            fprintf(stderr, "Unable to set callback\n");
+            cwiid_close(wiimote);
+        }
 
-    if (cwiid_set_mesg_callback(wiimote, &cwiid_callback)) {
-        fprintf(stderr, "Unable to set callback\n");
-        cwiid_close(wiimote);
-        return 1;
-    }
-
-    if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
-        fprintf(stderr, "Unable to set report mode\n");
-        cwiid_close(wiimote);
-        return 1;
+        if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
+            fprintf(stderr, "Unable to set report mode\n");
+            cwiid_close(wiimote);
+        }
     }
 
     InitWindow(640, 480, "WeeNinja");
@@ -125,20 +132,19 @@ int main(int argc, char **argv) {
     Matrix xform = MatrixIdentity();
 
     float rot = 0.0f;
+    SetTargetFPS(60);
 
     while (!WindowShouldClose()) {
         PollInputEvents();
-
-        rot += 0.5f * GetFrameTime();
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
-        xform = MatrixMultiply(MatrixRotateY(rot), xform);
 
         BeginDrawing();
         BeginMode3D(camera);
+
         ClearBackground(WHITE);
 
-        DrawMesh(m.meshes[0], m.materials[0], xform);
-
+        /* DrawMesh(m.meshes[0], m.materials[0], xform); */
+        DrawSlicer(camera);
         EndMode3D();
 
         /* menu(); */
@@ -146,6 +152,9 @@ int main(int argc, char **argv) {
 
         SwapScreenBuffer();
     }
-    cwiid_close(wiimote);
+    if (use_wiimote) {
+        cwiid_close(wiimote);
+    }
+
     return 0;
 }
