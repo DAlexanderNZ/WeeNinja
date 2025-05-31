@@ -73,26 +73,6 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
     }
 }
 
-void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
-                    union cwiid_mesg mesg_array[], struct timespec *timestamp) {
-    for (int i = 0; i < mesg_count; i++) {
-        union cwiid_mesg msg = mesg_array[i];
-        switch (msg.type) {
-        case CWIID_MESG_BTN:
-            print_buttons(msg.btn_mesg.buttons);
-            break;
-        case CWIID_MESG_IR:
-            print_ir_event(msg.ir_mesg.src);
-            break;
-        default:
-            break;
-        }
-        if (mesg_array[i].type == CWIID_MESG_BTN) {
-            print_buttons(mesg_array[i].btn_mesg.buttons);
-        }
-    }
-}
-
 int main(int argc, char **argv) {
     cwiid_wiimote_t *wiimote;
     bdaddr_t bdaddr = *BDADDR_ANY;
