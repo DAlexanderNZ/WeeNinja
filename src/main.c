@@ -52,7 +52,6 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
         }
     }
     if (blob_count == 2) {
-
         ir_to_real_space(px1, py1, px2, py2, &targetScreen);
     }
 }
@@ -135,7 +134,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose()) {
         PollInputEvents();
 
-        screen = Lerp2(screen, targetScreen, 0.5);
+        screen = Lerp2(screen, targetScreen, 0.7);
 
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
 
