@@ -86,7 +86,7 @@ int main(int argc, char *argv[]) {
         return 1;
     }
 
-    if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN)) {
+    if (cwiid_set_rpt_mode(wiimote, CWIID_RPT_BTN | CWIID_RPT_IR)) {
         fprintf(stderr, "Unable to set report mode\n");
         cwiid_close(wiimote);
         return 1;
