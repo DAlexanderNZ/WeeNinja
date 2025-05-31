@@ -1,4 +1,3 @@
-#include <raylib.h>
 #include <stdio.h>
 
 #include <bluetooth/bluetooth.h>

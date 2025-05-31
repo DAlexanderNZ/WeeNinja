@@ -37,7 +37,7 @@ default: makedir all
 
 # non-phony targets
 $(TARGET): $(OBJ)
-	@$(CC) -o $@ $(OBJ) $(CFLAGS) `pkg-config --libs raylib`
+	@$(CC) -o $@ $(OBJ) $(CFLAGS)
 
 $(OBJ_PATH)/%.o: $(SRC_PATH)/%.c*
 	@$(CC) $(COBJFLAGS) -o $@ $<
