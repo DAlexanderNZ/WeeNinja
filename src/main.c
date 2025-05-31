@@ -42,7 +42,7 @@ void print_buttons(uint16_t buttons) {
 }
 
 void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
-                      int *screen_x, int *screen_y, float *distance) {
+                      float *screen_x, float *screen_y) {
 
     float mid_y =
         ((float)(py1 + py2)) / 2.0 +
@@ -50,14 +50,13 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
     float mid_x = ((float)(px1 + px2)) / 2.0;
     float offset_y = (CY - mid_y) / 768;
     float offset_x = (CX - mid_x) / 1024;
-    *screen_y = (int)(offset_y + 0.5);
-    *screen_x = (int)(offset_x + 0.5);
+    *screen_y = offset_y;
+    *screen_x = offset_x;
 }
 
 void print_ir_event(struct cwiid_ir_src srcs[]) {
-    int screen_x = 0;
-    int screen_y = 0;
-    float distance = 0.0;
+    float screen_x = 0;
+    float screen_y = 0;
     uint16_t px1 = 0;
     uint16_t px2 = 0;
     uint16_t py1 = 0;
@@ -77,8 +76,8 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
         }
     }
     if (blob_count) {
-        ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y, &distance);
-        printf("Screen space x = %d, y = %d", screen_x, screen_y);
+        ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y);
+        printf("Screen space x = %f, y = %f", screen_x, screen_y);
     }
 }
 
