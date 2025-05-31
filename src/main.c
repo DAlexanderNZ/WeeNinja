@@ -50,7 +50,7 @@ void handle_accel_event(struct cwiid_acc_mesg msg) {
     if (acceleration > FLICK_THRESHOLD) {
         printf("We're flicking the fruit\n");
         flicking = true;
-        flick_angle = atan2(a_z, a_x) + M_PI;
+        flick_angle = atan2(a_z, a_x);
         flick_acceleration = acceleration;
     } else {
         flicking = false;
@@ -118,6 +118,8 @@ Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
 }
 
 Vector2 Flick(Vector2 from, float theta, float acceleration) {
+    printf("from.x = %f from.y = %f theta = %f acceleration = %f", from.x,
+           from.y, theta, acceleration);
     Vector2 direction = {acceleration * cos(theta), acceleration * sin(theta)};
     return Vector2Add(from, direction);
 }
