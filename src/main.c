@@ -10,7 +10,7 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
 
 int main(int argc, char **argv) {
 
-    bdaddr_t bdaddr;
+    bdaddr_t bdaddr = *BDADDR_ANY;
     cwiid_wiimote_t *wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
 
     if (!wiimote) {
