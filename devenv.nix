@@ -5,7 +5,16 @@
   env.GREET = "devenv";
 
   # https://devenv.sh/packages/
-  packages = with pkgs; [ git gnumake raylib clang-tools bluez cwiid ];
+  packages = with pkgs; [
+    git
+    gnumake
+    raylib
+    clang-tools
+    bluez
+    cwiid
+    valgrind
+    gdb
+  ];
 
   # https://devenv.sh/languages/
   # languages.rust.enable = true;

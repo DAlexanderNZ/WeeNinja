@@ -33,6 +33,7 @@ void print_buttons(uint16_t buttons) {
 
 void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
                     union cwiid_mesg mesg_array[], struct timespec *timestamp) {
+    printf("Got a callback!\n");
     for (int i = 0; i < mesg_count; i++) {
         if (mesg_array[i].type == CWIID_MESG_BTN) {
             print_buttons(mesg_array[i].btn_mesg.buttons);
@@ -51,7 +52,8 @@ int main(int argc, char *argv[]) {
     }
 
     printf("Press buttons 1+2 on your Wiimote now...\n");
-    wiimote = cwiid_open(&bdaddr, 0);
+    wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
+    printf("HUH!\n");
     if (!wiimote) {
         fprintf(stderr, "Unable to connect\n");
         return 1;
