@@ -34,7 +34,6 @@ void wn_spawnfruit(GameState *state, int type) {
 
     state->fruit[state->n_fruit] = f;
     state->n_fruit++;
-    printf("spawned froot\n");
 }
 
 void wn_update(GameState *state) {
@@ -50,7 +49,6 @@ void wn_update(GameState *state) {
         f->theta += f->omega * GetFrameTime();
 
         if (f->position.y < -10.0f) {
-            printf("killing froot\n");
             f->alive = false;
         }
     }
