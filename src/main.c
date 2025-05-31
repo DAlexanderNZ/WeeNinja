@@ -18,6 +18,7 @@
 #define CX 512.0
 
 Vector2 screen = {320, 240};
+Vector2 screen_extents = {320, 240};
 Vector2 targetScreen = {320, 240};
 struct acc_cal wm_cal;
 int flicking = false;
@@ -39,11 +40,13 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
     float mid_y = ((float)(py1 + py2)) / 2.0;
     float mid_x = ((float)(px1 + px2)) / 2.0;
 
-    float offset_y = -(CY - mid_y) / 768.0f;
-    float offset_x = (CX - mid_x) / 1024.0f;
+    float offset_y = -(CY - mid_y) / screen_extents.y;
+    float offset_x = (CX - mid_x) / screen_extents.x;
 
-    output_screen_coords->x = 320.0f + offset_x * 640.0f;
-    output_screen_coords->y = 240.0f + offset_y * 480.0f;
+    output_screen_coords->x =
+        screen_extents.x / 2 + offset_x * screen_extents.x;
+    output_screen_coords->y =
+        screen_extents.y / 2 + offset_y * screen_extents.y;
 }
 
 void handle_accel_event(struct cwiid_acc_mesg msg) {}
@@ -139,8 +142,8 @@ int main(int argc, char **argv) {
     InitWindow(640, 480, "WeeNinja");
 
     ToggleFullscreen();
-    screen.x = (float)GetScreenWidth();
-    screen.y = (float)GetScreenHeight();
+    screen_extents.x = (float)GetScreenWidth();
+    screen_extents.y = (float)GetScreenHeight();
     Camera3D camera = {0};
     camera.position = (Vector3){0.0f, 0.0f, 1.0f};
     camera.target = (Vector3){0.0f, 0.0f, -1.0f};
