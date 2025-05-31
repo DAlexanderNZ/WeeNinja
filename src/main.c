@@ -56,6 +56,14 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
         ir_to_real_space(px1, py1, px2, py2, &targetScreen);
     }
 }
+void DrawSlicer(Camera camera, Vector2 at) {
+    Ray ray = GetScreenToWorldRay(at, camera);
+    // Project the ray direction onto the z = 0 plane from the ray position
+    float t = -ray.position.z / ray.direction.z;
+    Vector3 OnZ0Plane =
+        Vector3Add(ray.position, Vector3Scale(ray.direction, t));
+    DrawSphere(OnZ0Plane, 0.1, BLUE);
+}
 
 void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
                     union cwiid_mesg mesg_array[], struct timespec *timestamp) {
@@ -72,14 +80,9 @@ void cwiid_callback(cwiid_wiimote_t *wiimote, int mesg_count,
             break;
         }
     }
-
-    float t = -ray.position.z / ray.direction.z;
-    Vector3 OnZ0Plane =
-        Vector3Add(ray.position, Vector3Scale(ray.direction, t));
-    DrawSphere(OnZ0Plane, 0.1, BLUE);
 }
 
-Vector2 Lerp(Vector2 from, Vector2 to, float alpha) {
+Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
     return (Vector2){from.x + alpha * (to.x - from.x),
                      from.y + alpha * (to.y - from.y)};
 }
@@ -132,7 +135,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose()) {
         PollInputEvents();
 
-        screen = Lerp(screen, targetScreen, 0.5);
+        screen = Lerp2(screen, targetScreen, 0.5);
 
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
 
