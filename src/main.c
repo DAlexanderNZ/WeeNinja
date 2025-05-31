@@ -146,7 +146,7 @@ int main(int argc, char **argv) {
             cwiid_close(wiimote);
             return 1;
         }
-        cwiid_get_acc_cal(wiimote, CWIID_EXT_NONE, &wm_cal)
+        cwiid_get_acc_cal(wiimote, CWIID_EXT_NONE, &wm_cal);
     }
 
     InitWindow(640, 480, "WeeNinja");
@@ -185,7 +185,7 @@ int main(int argc, char **argv) {
             fruit_timer = 0.0f;
             wn_spawnfruit(&state, FRUIT_APPLE);
         }
-        
+
         wn_update(&state);
         wn_drawfruit(&state);
 
