@@ -21,8 +21,8 @@ Vector2 screen = {320, 240};
 Vector2 targetScreen = {320, 240};
 struct acc_cal wm_cal;
 int flicking = false;
-float flick_angle = 0.0;
-float flick_acceleration = 0.0;
+Vector2 flick_direction = {0.0, 0.0};
+
 #define ALPHA 0.6
 
 void print_buttons(uint16_t buttons) {}
@@ -51,10 +51,7 @@ void handle_accel_event(struct cwiid_acc_mesg msg) {
     if (acceleration > FLICK_THRESHOLD) {
         printf("We're flicking the fruit\n");
         flicking = true;
-        flick_angle = atan2(a_z, a_x);
-        printf("theta = %f\n", flick_angle * 180 / M_PI);
-        flick_acceleration = acceleration;
-        printf("accel = %f\n", flick_acceleration);
+        flick_direction = (Vector2){a_z, a_x};
     } else {
         flicking = false;
     }
@@ -120,11 +117,9 @@ Vector2 Lerp2(Vector2 from, Vector2 to, float alpha) {
                      from.y + alpha * (to.y - from.y)};
 }
 
-Vector2 Flick(Vector2 from, float theta, float acceleration) {
-    printf("from.x = %f from.y = %f theta = %f acceleration = %f\n", from.x,
-           from.y, theta, acceleration);
-    Vector2 direction = {acceleration * cos(theta), acceleration * sin(theta)};
-    return Vector2Add(from, direction);
+Vector2 Flick(Vector2 from, Vector2 acceleration) {
+
+    return Vector2Add(from, acceleration);
 }
 
 int main(int argc, char **argv) {
@@ -174,7 +169,7 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
         if (flicking) {
-            screen = Flick(screen, flick_angle, flick_acceleration);
+            screen = Flick(screen, flick_direction);
             targetScreen = screen;
         } else {
             screen = Lerp2(screen, targetScreen, 0.7);
