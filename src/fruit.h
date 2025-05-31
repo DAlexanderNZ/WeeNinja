@@ -28,6 +28,8 @@
 enum FruitType {
   FRUIT_APPLE = 0,
   FRUIT_ORANGE = 1,
+  FRUIT_KIWIFRUIT = 2,
+  FRUIT_PINEAPPLE = 3,
   _N_FRUIT
 };
 
