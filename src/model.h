@@ -29,6 +29,6 @@ typedef struct WNModel {
     const char *texture_file;
 } WNModel;
 
-const Model get_fruit_model(int fruit);
+Model get_fruit_model(int fruit);
 
 #endif
