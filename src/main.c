@@ -1,4 +1,6 @@
+#include "main.h"
 #include "menu.h"
+#include "message.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
 #include <raylib.h>
@@ -130,9 +132,10 @@ int main(int argc, char **argv) {
 
     SetTargetFPS(60);
 
+    int shouldQuit = 0;
     screen = targetScreen;
 
-    while (!WindowShouldClose()) {
+    while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
 
         screen = Lerp2(screen, targetScreen, 0.5);
@@ -147,7 +150,7 @@ int main(int argc, char **argv) {
         DrawSlicer(camera, screen);
         EndMode3D();
 
-        /* menu(); */
+        /* shouldQuit = handleMsg(menu()); */
         EndDrawing();
     }
 
