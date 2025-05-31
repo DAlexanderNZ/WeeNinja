@@ -47,7 +47,7 @@ void print_ir_event(struct cwiid_ir_src srcs[]) {
             }
         }
     }
-    if (blob_count) {
+    if (blob_count == 2) {
         ir_to_real_space(px1, py1, px2, py2, &screen_x, &screen_y);
         printf("Screen space x = %f, y = %f", screen_x, screen_y);
     }
