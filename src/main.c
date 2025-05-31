@@ -136,7 +136,7 @@ int main(int argc, char **argv) {
 
     float rot = 0.0f;
     SetTargetFPS(60);
-    Vector2 target = {screen.x, screen.y};
+
     while (!WindowShouldClose()) {
         PollInputEvents();
         xform = MatrixTranslate(0.0f, 0.0f, -7.0f);
@@ -147,8 +147,8 @@ int main(int argc, char **argv) {
         ClearBackground(WHITE);
 
         /* DrawMesh(m.meshes[0], m.materials[0], xform); */
-        Chase(target, screen);
-        DrawSlicer(camera, target);
+
+        DrawSlicer(camera, screen);
         EndMode3D();
 
         /* menu(); */
