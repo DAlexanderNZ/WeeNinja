@@ -12,7 +12,7 @@
 
 float screen_x = 0;
 float screen_y = 0;
-
+#define ALPHA 0.6
 void print_buttons(uint16_t buttons) {}
 
 void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
@@ -21,8 +21,8 @@ void ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
     float mid_x = ((float)(px1 + px2)) / 2.0;
     float offset_y = -(CY - mid_y) / 768;
     float offset_x = (CX - mid_x) / 1024;
-    *screen_y = offset_y;
-    *screen_x = offset_x;
+    *screen_y = offset_y + ALPHA * *screen_y;
+    *screen_x = offset_x + ALPHA * *screen_x;
 }
 
 void print_ir_event(struct cwiid_ir_src srcs[]) {
