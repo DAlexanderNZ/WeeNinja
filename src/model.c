@@ -59,13 +59,20 @@ const static WNModel models[] = {
                                   .texture_file =
                                       "resource/goodart/pineapple.png"},
     [FRUIT_PINEAPPLE_HALF_BOTTOM] = {
-        .model_file = "resource/goodart/pineapple_half_top.obj",
+        .model_file = "resource/goodart/pineapple_half_bottom.obj",
         .texture_file = "resource/goodart/pineapple.png" }
 };
 
 static LazyMesh loaded_meshes[_N_FRUIT] = {
     [FRUIT_APPLE] = {.status = NOT_LOADED, .data = {.nuh = 0}},
-    [FRUIT_ORANGE] = {.status = NOT_LOADED, .data = {.nuh = 0}}
+    [FRUIT_ORANGE] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_KIWIFRUIT] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_PINEAPPLE] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_APPLE_HALF] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_ORANGE_HALF] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_KIWIFRUIT_HALF] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_PINEAPPLE_HALF_TOP] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_PINEAPPLE_HALF_BOTTOM] = {.status = NOT_LOADED, .data = {.nuh = 0}},
 };
 
 static void load_mesh(int fruit) {
