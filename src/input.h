@@ -9,7 +9,7 @@
 
 void poll_position(float pos[]);
 void poll_velocity(float pos[]);
-void init_input();
+int init_input();
 void free_input();
 
 #endif
