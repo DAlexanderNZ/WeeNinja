@@ -47,6 +47,10 @@ int ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
   }
 
   float z = IR_SEP / (2.0f * tan(0.5f * delta_angle_x));
+  if (z < 0) {
+    // Occasionally z is negative, but we can correct for that.
+    z = z * -1.0f;
+  }
   float x = z * tan(0.5f * (angle_x1 + angle_x2));
   float y = z * tan(0.5f * (angle_y1 + angle_y2));
   pos[0] = x;
@@ -176,4 +180,15 @@ void free_input() {
       filter[i] = SF1eFilterDestroy(filter[i]);
     }
   }
+}
+
+void position_to_screen_space(const float position[], int width, int height,
+                              float screen[]) {
+  const float z = position[3];
+  const float x = position[0];
+  const float y = position[1];
+  const float theta_x = 2.0f * atan2(z, x);
+  const float theta_y = 2.0f * atan2(z, y);
+  screen[0] = 0.5f * (float)width * (1.0f + theta_x / FOV_X);
+  screen[1] = 0.5f * (float)height * (1.0f + theta_y / FOV_Y);
 }

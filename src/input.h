@@ -13,5 +13,6 @@ void poll_velocity(float pos[]);
 int init_input();
 void reset_filter();
 void free_input();
-
+void position_to_screen_space(const float position[], int width, int height,
+                              float screen[]);
 #endif
