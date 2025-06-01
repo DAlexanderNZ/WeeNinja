@@ -80,7 +80,10 @@ void wn_drawfruit(const GameState *state) {
         xform = MatrixMultiply(
             xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
 
-        DrawMesh(m.meshes[0], m.materials[0], xform);
+        for (int i = 0; i < m.meshCount; i++) {
+            int material_index = m.meshMaterial[i];
+            DrawMesh(m.meshes[i], m.materials[material_index], xform);
+        }
     }
 }
 
