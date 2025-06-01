@@ -146,14 +146,14 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     left->position = f->position;
     left->velocity.x = -8.0f;
     left->velocity.y = f->velocity.y;
-    left->omega = 0.0f;
-    left->theta = 0.0f;
+    left->omega = f->omega * 4.0f;
+    left->theta = f->theta;
     left->alive = true;
 
     right->position = f->position;
     right->velocity.x = 8.0f;
     right->velocity.y = f->velocity.y;
-    right->omega = 0.0f;
-    right->theta = 0.0f;
+    right->omega = -f->omega * 4.0f;
+    right->theta = f->theta;
     right->alive = true;
 }
