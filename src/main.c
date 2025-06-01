@@ -141,7 +141,7 @@ int main(int argc, char **argv) {
 
     InitWindow(640, 480, "WeeNinja");
 
-    ToggleFullscreen();
+    /* ToggleFullscreen(); */
     screen_extents.x = (float)GetScreenWidth();
     screen_extents.y = (float)GetScreenHeight();
     Camera3D camera = {0};
@@ -159,9 +159,14 @@ int main(int argc, char **argv) {
 
     float fruit_timer = 0.0f;
     while (!WindowShouldClose() && !shouldQuit) {
-        PollInputEvents();
+        /* PollInputEvents(); */
 
-        screen = Lerp2(screen, targetScreen, 0.7);
+        if (use_wiimote) {
+            screen = Lerp2(screen, targetScreen, 0.7);
+        } else {
+            screen = GetMousePosition();
+            shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+        }
 
         if (shooting) {
             Ray ray = GetScreenToWorldRay(shot_start, camera);
@@ -178,7 +183,24 @@ int main(int argc, char **argv) {
         fruit_timer += GetFrameTime();
         if (fruit_timer > 1.0f) {
             fruit_timer = 0.0f;
-            wn_spawnfruit(&state, rand() % _N_FRUIT);
+
+            int type;
+            switch (rand() % 4) {
+                case 0:
+                    type = FRUIT_APPLE;
+                    break;
+                case 1:
+                    type = FRUIT_KIWIFRUIT;
+                    break;
+                case 2:
+                    type = FRUIT_ORANGE;
+                    break;
+                default:
+                    type = FRUIT_PINEAPPLE;
+                    break;
+            }
+
+            wn_spawnfruit(&state, type);
         }
 
         wn_update(&state);

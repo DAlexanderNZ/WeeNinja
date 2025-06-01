@@ -23,7 +23,7 @@
 #define WEENINJA_APPLICATION_H
 
 #ifndef WEENINJA_MAX_FRUIT
-#define WEENINJA_MAX_FRUIT 1024
+#define WEENINJA_MAX_FRUIT 128
 #endif
 
 #include "fruit.h"
