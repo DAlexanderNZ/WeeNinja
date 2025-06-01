@@ -18,25 +18,19 @@ const float RAD_PER_PIXEL_X = FOV_X / WIDTH;
 const float RAD_PER_PIXEL_Y = FOV_Y / HEIGHT;
 const float IR_SEP = 0.2f;
 
-Kalman3D kalman = {0};
 struct acc_cal wm_cal;
 cwiid_wiimote_t *wiimote;
-float last_accel_event_timestamp_sec = 0.0f;
+
+SF1eFilter *filter[3] = {NULL, NULL, NULL};
+
+float last_position[3] = {0.0f, 0.0f, 0.0f};
+
+void poll_position(float position[]) {
+  memcpy(last_position, position, 3 * sizeof(float));
+}
 
 float timespec_to_float_seconds(const struct timespec *ts) {
   return (float)ts->tv_sec + (float)ts->tv_nsec / 1e9f;
-}
-
-void poll_position(float pos[]) {
-  pos[0] = kalman.x[0];
-  pos[1] = kalman.x[1];
-  pos[2] = kalman.x[2];
-}
-
-void poll_velocity(float vel[]) {
-  vel[0] = kalman.x[3];
-  vel[1] = kalman.x[4];
-  vel[2] = kalman.x[5];
 }
 
 int ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
@@ -61,7 +55,16 @@ int ir_to_real_space(uint16_t px1, uint16_t py1, uint16_t px2, uint16_t py2,
   return 1;
 }
 
-void track_ir_event(struct cwiid_ir_src srcs[]) {
+void one_euro_filter(float position[], const float message_time) {
+  if (message_time - filter[0]->lastTime > 0.5) {
+    reset_filter();
+  }
+  for (int i = 0; i < 3; i++) {
+    last_position[i] = SF1eFilterDo(filter[i], position[i]);
+  }
+}
+
+void track_ir_event(struct cwiid_ir_src srcs[], const float message_time) {
   uint16_t px1 = 0;
   uint16_t px2 = 0;
   uint16_t py1 = 0;
@@ -86,57 +89,27 @@ void track_ir_event(struct cwiid_ir_src srcs[]) {
   if (blob_count == 2) {
     float position[3] = {0};
     int ir_updated = ir_to_real_space(px1, py1, px2, py2, position);
-    if (ir_updated) {
-      kalman3d_update(&kalman, position, POS_UNCERTAINTY);
+    if (ir_updated && isfinite(position[0]) && isfinite(position[1]) &&
+        isfinite(position[2])) {
+      one_euro_filter(position, message_time);
     }
   }
-}
-
-// Modified to accept event_time_sec from the cwiid message header
-void handle_accel_event(struct cwiid_acc_mesg msg,
-                        float current_event_time_sec) {
-  float norm_ax = ((float)msg.acc[CWIID_X] - wm_cal.zero[CWIID_X]) /
-                  (wm_cal.one[CWIID_X] - wm_cal.zero[CWIID_X]);
-  float norm_ay = ((float)msg.acc[CWIID_Y] - wm_cal.zero[CWIID_Y]) /
-                  (wm_cal.one[CWIID_Y] - wm_cal.zero[CWIID_Y]);
-  float norm_az = ((float)msg.acc[CWIID_Z] - wm_cal.zero[CWIID_Z]) /
-                  (wm_cal.one[CWIID_Z] - wm_cal.zero[CWIID_Z]);
-
-  float dt;
-  if (last_accel_event_timestamp_sec == 0.0f) {
-    dt = 1e-2f; // I think it reports on a 1/100Hz frequency
-  } else {
-    dt = current_event_time_sec - last_accel_event_timestamp_sec;
-  }
-
-  if (dt < 0)
-    dt = 0;
-
-  float accel_m_s2[3] = {norm_ax * G, norm_ay * G, norm_az * G};
-
-  kalman3d_predict(&kalman, accel_m_s2, dt);
-
-  last_accel_event_timestamp_sec = current_event_time_sec;
 }
 
 void cwiid_callback(cwiid_wiimote_t *UNUSED_wiimote_arg, int mesg_count,
                     union cwiid_mesg mesg_array[],
                     struct timespec *callback_invoke_timestamp) {
   (void)UNUSED_wiimote_arg;
-  (void)callback_invoke_timestamp;
 
   for (int i = 0; i < mesg_count; i++) {
     float current_message_time_sec =
-        timespec_to_float_seconds(&mesg_array[i].hdr.timestamp);
+        timespec_to_float_seconds(callback_invoke_timestamp);
 
     switch (mesg_array[i].type) {
     case CWIID_MESG_BTN:
       break;
     case CWIID_MESG_IR:
-      track_ir_event(mesg_array[i].ir_mesg.src);
-      break;
-    case CWIID_MESG_ACC:
-      handle_accel_event(mesg_array[i].acc_mesg, current_message_time_sec);
+      track_ir_event(mesg_array[i].ir_mesg.src, current_message_time_sec);
       break;
     default:
       break;
@@ -144,11 +117,19 @@ void cwiid_callback(cwiid_wiimote_t *UNUSED_wiimote_arg, int mesg_count,
   }
 }
 
+/** (Re)set the 1-euro filter
+ */
+void reset_filter() {
+  for (int i = 0; i < 3; i++) {
+    if (!filter[i]) {
+      filter[i] = SF1eFilterCreate(1e-2f, 1.0f, 0.1f, 1.0f);
+    } else {
+      SF1eFilterInit(filter[i]);
+    }
+  }
+}
+
 int init_input() {
-  kalman3d_init(&kalman, POS_UNCERTAINTY, ACCEL_UNCERTAINTY);
-
-  last_accel_event_timestamp_sec = 0.0f;
-
   bdaddr_t bdaddr = *BDADDR_ANY;
 
   wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
@@ -181,7 +162,7 @@ int init_input() {
   fprintf(stdout, "Accelerometer calibration data received.\n");
 
   cwiid_set_led(wiimote, CWIID_LED1_ON);
-
+  reset_filter();
   return 0;
 }
 
@@ -191,5 +172,8 @@ void free_input() {
     cwiid_close(wiimote);
     wiimote = NULL;
     fprintf(stdout, "Wiimote connection closed.\n");
+    for (int i = 0; i < 3; i++) {
+      filter[i] = SF1eFilterDestroy(filter[i]);
+    }
   }
 }
