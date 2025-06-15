@@ -16,15 +16,19 @@ int shooting = 0;
 int screen_width;
 int screen_height;
 Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
+float cutoffSlope = 1.0f;
+float minCutoffFrequency = 0.1f;
 
 void print_buttons(uint16_t buttons) {
     switch (buttons) {
+    case CWIID_BTN_A:
+        cutoffSlope += 0.1;
     case CWIID_BTN_B:
-        float position[2] = {0.0, 0.0};
-        poll_position(position);
-        shot_start.x = screen_width * (position[0] + 0.5);
-        shot_start.y = screen_height * (position[1] + 0.5);
-        shooting = true;
+        cutoffSlope -= 0.1;
+    case CWIID_BTN_UP:
+        minCutoffFrequency += 0.1;
+    case CWIID_BTN_DOWN:
+        minCutoffFrequency -= 0.1;
     }
 }
 
@@ -38,12 +42,12 @@ void DrawSlicer(Camera camera, Vector2 at) {
 }
 
 int main(int argc, char **argv) {
-    cwiid_wiimote_t *wiimote;
     int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
+    cwiid_wiimote_t* wiimote = NULL;
     if (use_wiimote) {
-        int err = init_input();
-        if (err) {
-            return err;
+        wiimote = init_input(&print_buttons);
+        if (!wiimote) {
+            return -1;
         }
     }
 

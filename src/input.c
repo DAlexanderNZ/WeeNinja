@@ -1,4 +1,5 @@
 #include "input.h"
+#include "cwiid.h"
 
 /*
  * FOV values from NIH documentation
@@ -18,6 +19,7 @@ const float IR_SEP = 0.2f;
 
 struct acc_cal wm_cal;
 cwiid_wiimote_t *wiimote;
+void (*btn_callback)(uint16_t);
 
 SF1eFilter *filter[2] = {NULL, NULL};
 
@@ -51,6 +53,13 @@ void one_euro_filter(float position[], const float message_time) {
   for (int i = 0; i < 2; i++) {
     last_position[i] = SF1eFilterDo(filter[i], position[i]);
   }
+}
+void configure_filter(float minCutoffFrequency, float cutoffSlope) {
+  for (int i = 0; i < 2; i++) {
+    filter[i]->config.cutoffSlope = cutoffSlope;
+    filter[i]->config.minCutoffFrequency = minCutoffFrequency;
+  }
+  reset_filter();
 }
 
 void track_ir_event(struct cwiid_ir_src srcs[], const float message_time) {
@@ -95,6 +104,7 @@ void cwiid_callback(cwiid_wiimote_t *UNUSED_wiimote_arg, int mesg_count,
 
     switch (mesg_array[i].type) {
     case CWIID_MESG_BTN:
+      btn_callback(mesg_array[i].btn_mesg.buttons);
       break;
     case CWIID_MESG_IR:
       track_ir_event(mesg_array[i].ir_mesg.src, current_message_time_sec);
@@ -117,41 +127,41 @@ void reset_filter() {
   }
 }
 
-int init_input() {
+cwiid_wiimote_t* init_input(void (*user_btn_callback)(uint16_t)){
   bdaddr_t bdaddr = *BDADDR_ANY;
-
+  btn_callback = user_btn_callback;
   wiimote = cwiid_open(&bdaddr, CWIID_FLAG_MESG_IFC);
   if (!wiimote) {
     fprintf(stderr, "Unable to connect to Wiimote. Please ensure it is "
                     "discoverable (press 1+2).\n");
-    return 1;
+    return NULL;
   }
   fprintf(stdout, "Wiimote connected successfully!\n");
 
   if (cwiid_set_mesg_callback(wiimote, &cwiid_callback)) {
     fprintf(stderr, "Unable to set Wiimote message callback\n");
     cwiid_close(wiimote);
-    return 1;
+    return NULL;
   }
 
   if (cwiid_set_rpt_mode(wiimote,
                          CWIID_RPT_BTN | CWIID_RPT_IR | CWIID_RPT_ACC)) {
     fprintf(stderr, "Error setting Wiimote report mode\n");
     cwiid_close(wiimote);
-    return 1;
+    return NULL;
   }
   fprintf(stdout, "Wiimote report mode set.\n");
 
   if (cwiid_get_acc_cal(wiimote, CWIID_EXT_NONE, &wm_cal)) {
     fprintf(stderr, "Error getting Wiimote accelerometer calibration data\n");
     cwiid_close(wiimote);
-    return 1;
+    return NULL;
   }
   fprintf(stdout, "Accelerometer calibration data received.\n");
 
   cwiid_set_led(wiimote, CWIID_LED1_ON);
   reset_filter();
-  return 0;
+  return wiimote;
 }
 
 void free_input() {
