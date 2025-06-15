@@ -20,12 +20,10 @@ Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
 void print_buttons(uint16_t buttons) {
     switch (buttons) {
     case CWIID_BTN_B:
-        float position[3] = {0.0, 0.0, 0.0};
-        float screen[2] = {0.0, 0.0};
+        float position[2] = {0.0, 0.0};
         poll_position(position);
-        position_to_screen_space(position, screen_width, screen_height, screen);
-        shot_start.x = screen[0];
-        shot_start.y = screen[1];
+        shot_start.x = screen_width * (position[0] + 0.5);
+        shot_start.y = screen_height * (position[1] + 0.5);
         shooting = true;
     }
 }
@@ -70,13 +68,11 @@ int main(int argc, char **argv) {
     while (!WindowShouldClose() && !shouldQuit) {
         PollInputEvents();
 
-        float position[3] = {0.0, 0.0, 0.0};
-        float screen_pos[2] = {0.0, 0.0};
-        position_to_screen_space(position, screen_width, screen_height,
-                                 screen_pos);
-        Vector2 screen = (Vector2){.x = screen_pos[0], .y = screen_pos[1]};
+        float position[2] = {0.0, 0.0};
         poll_position(position);
 
+        Vector2 screen = (Vector2){.x = screen_width * (0.5 + position[0]),
+                                   .y = screen_height * (0.5 + position[1])};
         if (shooting) {
             Ray ray = GetScreenToWorldRay(shot_start, camera);
             wn_fruit_pick(&state, ray);
