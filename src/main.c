@@ -30,6 +30,8 @@ void print_buttons(uint16_t buttons) {
     case CWIID_BTN_DOWN:
         minCutoffFrequency -= 0.1;
     }
+    configure_filter(minCutoffFrequency, cutoffSlope);
+    printf("Look ma I updated the values to %f %f", cutoffSlope, minCutoffFrequency);
 }
 
 void DrawSlicer(Camera camera, Vector2 at) {

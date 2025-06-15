@@ -12,7 +12,7 @@ void poll_position(float pos[]);
 void poll_velocity(float pos[]);
 cwiid_wiimote_t* init_input(void (*user_btn_callback)(uint16_t));
 void reset_filter();
-void configure_fiter(float minCutoffFrequency, float cutoffSlope);
+void configure_filter(float minCutoffFrequency, float cutoffSlope);
 void free_input();
 void position_to_screen_space(const float position[], int width, int height,
                               float screen[]);
