@@ -80,7 +80,10 @@ void wn_drawfruit(const GameState *state) {
         xform = MatrixMultiply(
             xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
 
-        DrawMesh(m.meshes[0], m.materials[0], xform);
+        for (int j = 0; j < m.meshCount; j++) {
+            int material_index = m.meshMaterial[j];
+            DrawMesh(m.meshes[j], m.materials[material_index], xform);
+        }
     }
 }
 
@@ -143,14 +146,14 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     left->position = f->position;
     left->velocity.x = -8.0f;
     left->velocity.y = f->velocity.y;
-    left->omega = 0.0f;
-    left->theta = 0.0f;
+    left->omega = f->omega * 4.0f;
+    left->theta = f->theta;
     left->alive = true;
 
     right->position = f->position;
     right->velocity.x = 8.0f;
     right->velocity.y = f->velocity.y;
-    right->omega = 0.0f;
-    right->theta = 0.0f;
+    right->omega = -f->omega * 4.0f;
+    right->theta = f->theta;
     right->alive = true;
 }
