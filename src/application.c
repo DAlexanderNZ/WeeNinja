@@ -112,13 +112,13 @@ int wn_fruit_pick(GameState *state, Ray ray) {
         const float dist_sq = Vector3DistanceSqr(
             in_plane, (Vector3){f->position.x, f->position.y, -20.0f});
 
-        if (dist_sq < 1.0f) {
+        if (dist_sq < 64.0f) {
             int s = wn_splitfruit(state, f);
 
             if (score < 0) {
                 return -1;
             } else {
-                return score += s;
+                score += s;
             }
         }
     }
