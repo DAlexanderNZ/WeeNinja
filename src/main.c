@@ -1,21 +1,6 @@
 #include "main.h"
-#include "application.h"
-#include "fruit.h"
-#include "input.h"
-#include "menu.h"
-#include "message.h"
-#include "model.h"
-#include <bluetooth/bluetooth.h>
-#include <cwiid.h>
-#include <raylib.h>
-#include <raymath.h>
-#include <stdlib.h>
-#include <unistd.h>
 
-typedef enum GAME_SCREEN {
-    MAIN_MENU,
-    GAME
-} game_screen_t;
+typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 
 int shooting = 0;
 int screen_width;
@@ -44,7 +29,7 @@ void DrawSlicer(Camera camera, Vector2 at) {
 
 int main(int argc, char **argv) {
     int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
-    cwiid_wiimote_t* wiimote = NULL;
+    cwiid_wiimote_t *wiimote = NULL;
     if (use_wiimote) {
         wiimote = init_input(&handle_button_event);
         if (!wiimote) {
@@ -78,68 +63,68 @@ int main(int argc, char **argv) {
             float position[2] = {0.0, 0.0};
             poll_position(position);
             screen = (Vector2){.x = screen_width * (0.5 + position[0]),
-                                       .y = screen_height * (0.5 + position[1])};
+                               .y = screen_height * (0.5 + position[1])};
         } else {
             screen = GetMousePosition();
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         }
-        
+
         switch (game_screen) {
-            case MAIN_MENU:
-                int menu_msg = menu(screen, shooting);
-                if (menu_msg == menuPlay) {
-                    game_screen = GAME;
-                }
-                break;
-            case GAME:
+        case MAIN_MENU:
+            int menu_msg = menu(screen, shooting);
+            if (menu_msg == menuPlay) {
+                game_screen = GAME;
+            }
+            break;
+        case GAME:
 
-                if (shooting) {
-                    Ray ray = GetScreenToWorldRay(shot_start, camera);
-                    wn_fruit_pick(&state, ray);
-                    shooting = false;
-                }
+            if (shooting) {
+                Ray ray = GetScreenToWorldRay(shot_start, camera);
+                wn_fruit_pick(&state, ray);
+                shooting = false;
+            }
 
-                BeginDrawing();
-                BeginMode3D(camera);
+            BeginDrawing();
+            BeginMode3D(camera);
 
-                ClearBackground(WHITE);
+            ClearBackground(WHITE);
 
-                DrawSlicer(camera, screen);
+            DrawSlicer(camera, screen);
 
-                fruit_timer += GetFrameTime();
-                if (fruit_timer > 0.25f) {
-                    fruit_timer = 0.0f;
+            fruit_timer += GetFrameTime();
+            if (fruit_timer > 0.25f) {
+                fruit_timer = 0.0f;
 
-                    int type;
-                    switch (rand() % 4) {
-                        case 0:
-                            type = FRUIT_APPLE;
-                            break;
-                        case 1:
-                            type = FRUIT_KIWIFRUIT;
-                            break;
-                        case 2:
-                            type = FRUIT_ORANGE;
-                            break;
-                        default:
-                            type = FRUIT_PINEAPPLE;
-                            break;
-                    }
-
-                    wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+                int type;
+                switch (rand() % 4) {
+                case 0:
+                    type = FRUIT_APPLE;
+                    break;
+                case 1:
+                    type = FRUIT_KIWIFRUIT;
+                    break;
+                case 2:
+                    type = FRUIT_ORANGE;
+                    break;
+                default:
+                    type = FRUIT_PINEAPPLE;
+                    break;
                 }
 
-                wn_update(&state);
-                wn_drawfruit(&state);
+                wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+            }
 
-                EndMode3D();
+            wn_update(&state);
+            wn_drawfruit(&state);
 
-                /* shouldQuit = handleMsg(menu()); */
+            EndMode3D();
 
-                /* menu(); */
-                EndDrawing();
-                break;
+            /* shouldQuit = handleMsg(menu()); */
+
+            /* menu(); */
+            EndDrawing();
+            break;
         }
         shooting = false;
     }
