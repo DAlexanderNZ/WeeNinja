@@ -30,6 +30,7 @@ int menu(Vector2 mPos, int isMouseDown) {
     for (i = 0; i < 3; i++) {
         buttons[i] = drawButton(menuButtons[i]);
     }
+    DrawCircle(mPos.x, mPos.y, 10.0, RED);
     //Check for mouse click on button
     if (isMouseDown) {
         if (CheckCollisionPointRec(mPos, buttons[0])) {
