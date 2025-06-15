@@ -165,6 +165,7 @@ int main(int argc, char **argv) {
             screen = Lerp2(screen, targetScreen, 0.7);
         } else {
             screen = GetMousePosition();
+            shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         }
 
@@ -181,7 +182,7 @@ int main(int argc, char **argv) {
         DrawSlicer(camera, screen);
 
         fruit_timer += GetFrameTime();
-        if (fruit_timer > 1.0f) {
+        if (fruit_timer > 0.25f) {
             fruit_timer = 0.0f;
 
             int type;
