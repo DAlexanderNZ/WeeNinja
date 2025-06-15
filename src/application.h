@@ -31,6 +31,7 @@
 typedef struct GameState {
     Fruit fruit[WEENINJA_MAX_FRUIT];
     int n_fruit;
+    int score;
 } GameState;
 
 void wn_state_init(GameState *state);
@@ -38,7 +39,7 @@ void wn_update(GameState *state);
 void wn_spawnfruit(GameState *state, int type, int chirality);
 void wn_killfruit(GameState *state, Fruit *f);
 void wn_drawfruit(const GameState *state);
-void wn_fruit_pick(GameState *state, Ray ray);
-void wn_splitfruit(GameState* state, Fruit *f);
+int  wn_fruit_pick(GameState *state, Ray ray);
+int  wn_splitfruit(GameState* state, Fruit *f);
 
 #endif

@@ -58,9 +58,14 @@ const static WNModel models[] = {
                                       "resource/goodart/pineapple_half_top.obj",
                                   .texture_file =
                                       "resource/goodart/pineapple.png"},
-    [FRUIT_PINEAPPLE_HALF_BOTTOM] = {
-        .model_file = "resource/goodart/pineapple_half_bottom.obj",
-        .texture_file = "resource/goodart/pineapple.png" }
+    [FRUIT_PINEAPPLE_HALF_BOTTOM] =
+        {.model_file = "resource/goodart/pineapple_half_bottom.obj",
+         .texture_file = "resource/goodart/pineapple.png"},
+
+    [FRUIT_BOMB] = {
+        .model_file = "resource/programmerart/bomb.obj",
+        .texture_file = "resource/programmerart/bomb.png"
+    }
 };
 
 static LazyMesh loaded_meshes[_N_FRUIT] = {

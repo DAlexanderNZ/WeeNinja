@@ -23,6 +23,7 @@ static void provision_fruit(GameState *state, Fruit **fruit) {
 
 void wn_state_init(GameState *state) {
     state->n_fruit = 0;
+    state->score = 0;
 
     for (int i = 0; i < WEENINJA_MAX_FRUIT; i++) {
         state->fruit[i].alive = false;
@@ -95,8 +96,10 @@ void wn_drawfruit(const GameState *state) {
     }
 }
 
-void wn_fruit_pick(GameState *state, Ray ray) {
+int wn_fruit_pick(GameState *state, Ray ray) {
     const float z_plane = -20.0f;
+    int score = 0;
+
     for (int i = 0; i < WEENINJA_MAX_FRUIT; i++) {
         if (!state->fruit[i].alive) {
             continue;
@@ -110,12 +113,20 @@ void wn_fruit_pick(GameState *state, Ray ray) {
             in_plane, (Vector3){f->position.x, f->position.y, -20.0f});
 
         if (dist_sq < 1.0f) {
-            wn_splitfruit(state, f);
+            int s = wn_splitfruit(state, f);
+
+            if (score < 0) {
+                return -1;
+            } else {
+                return score += s;
+            }
         }
     }
+
+    return score;
 }
 
-void wn_splitfruit(GameState *state, Fruit *f) {
+int wn_splitfruit(GameState *state, Fruit *f) {
     int new_type = -1;
     switch (f->type) {
     case FRUIT_APPLE:
@@ -127,8 +138,12 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     case FRUIT_ORANGE:
         new_type = FRUIT_ORANGE_HALF;
         break;
-    default:
-        return;
+    case FRUIT_PINEAPPLE:
+        break;
+
+    case FRUIT_BOMB:
+        return -1;
+    default: return 0;
     }
 
     f->alive = false;
@@ -166,4 +181,6 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     } else {
         right->chirality = FRUIT_CHIRALITY_RIGHT;
     }
+
+    return 1;
 }

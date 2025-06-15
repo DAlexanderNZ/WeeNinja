@@ -1,4 +1,5 @@
 #include "main.h"
+#include <raylib.h>
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 
@@ -83,56 +84,70 @@ int main(int argc, char **argv) {
         }
 
         switch (game_screen) {
-        case MAIN_MENU:
-            int menu_msg = menu(screen, shooting);
-            if (menu_msg == menuPlay) {
-                game_screen = GAME;
+            case MAIN_MENU: {
+                int menu_msg = menu(screen, shooting);
+                if (menu_msg == menuPlay) {
+                    game_screen = GAME;
+                }
+                break;
             }
-            break;
-        case GAME:
+            case GAME: {
+                if (shooting) {
+                    Ray ray = GetScreenToWorldRay(shot_start, camera);
+                    int score = wn_fruit_pick(&state, ray);
 
-            if (shooting) {
-                Ray ray = GetScreenToWorldRay(shot_start, camera);
-                wn_fruit_pick(&state, ray);
-                shooting = false;
-            }
+                    if (score < 0) {
+                        wn_state_init(&state);
+                    } else {
+                        state.score += score;
+                    }
 
-            BeginDrawing();
-            BeginMode3D(camera);
-
-            ClearBackground(WHITE);
-
-            DrawSlicer(camera, screen);
-
-            fruit_timer += GetFrameTime();
-            if (fruit_timer > 0.25f) {
-                fruit_timer = 0.0f;
-
-                int type;
-                switch (rand() % 4) {
-                case 0:
-                    type = FRUIT_APPLE;
-                    break;
-                case 1:
-                    type = FRUIT_KIWIFRUIT;
-                    break;
-                case 2:
-                    type = FRUIT_ORANGE;
-                    break;
-                default:
-                    type = FRUIT_PINEAPPLE;
-                    break;
+                    shooting = false;
                 }
 
-                wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+                BeginDrawing();
+                BeginMode3D(camera);
+
+                fruit_timer += GetFrameTime();
+                if (fruit_timer > 0.25f) {
+                    fruit_timer = 0.0f;
+
+                    int type;
+                    switch (rand() % 5) {
+                        case 0:
+                            type = FRUIT_APPLE;
+                            break;
+                        case 1:
+                            type = FRUIT_KIWIFRUIT;
+                            break;
+                        case 2:
+                            type = FRUIT_ORANGE;
+                            break;
+                        case 3:
+                            type = FRUIT_BOMB;
+                            break;
+                        case 4:
+                            type = FRUIT_PINEAPPLE;
+                            break;
+                    }
+
+                    wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+                }
+
+                ClearBackground(WHITE);
+                wn_update(&state);
+                wn_drawfruit(&state);
+
+                DrawSlicer(camera, screen);
+                EndMode3D();
+
+                char scoreText[256] = { 0 };
+                snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
+                DrawText(scoreText, 0, 0, 16, RED);
+
+                EndDrawing();
+                break;
             }
-
-            wn_update(&state);
-            wn_drawfruit(&state);
-
-            EndMode3D();
-            EndDrawing();
-            break;
         }
     }
 
