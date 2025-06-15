@@ -29,7 +29,7 @@ void wn_state_init(GameState *state) {
     }
 }
 
-void wn_spawnfruit(GameState *state, int type) {
+void wn_spawnfruit(GameState *state, int type, int chirality) {
     Fruit *f;
     provision_fruit(state, &f);
     float xvel = 2.0f * (((float)rand() / (float)RAND_MAX) - 0.5f);
@@ -45,6 +45,7 @@ void wn_spawnfruit(GameState *state, int type) {
     f->omega = 0.3f;
     f->type = type;
     f->alive = true;
+    f->chirality = chirality;
 }
 
 void wn_killfruit(GameState *state, Fruit *f) { f->alive = 0; }
@@ -76,7 +77,14 @@ void wn_drawfruit(const GameState *state) {
 
         Model m = get_fruit_model(f->type);
         Matrix xform = MatrixIdentity();
+
         xform = MatrixMultiply(xform, MatrixRotateZ(f->theta));
+        if (f->chirality == FRUIT_CHIRALITY_LEFT) {
+            /* nop */
+        } else if (f->chirality == FRUIT_CHIRALITY_RIGHT) {
+            xform = MatrixMultiply(xform, MatrixScale(-1, 1, 1));
+        }
+
         xform = MatrixMultiply(
             xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
 
@@ -113,16 +121,12 @@ void wn_splitfruit(GameState *state, Fruit *f) {
     case FRUIT_APPLE:
         new_type = FRUIT_APPLE_HALF;
         break;
-    case FRUIT_PINEAPPLE:
-        new_type = FRUIT_PINEAPPLE_HALF_TOP;
-        break;
     case FRUIT_KIWIFRUIT:
         new_type = FRUIT_KIWIFRUIT_HALF;
         break;
     case FRUIT_ORANGE:
         new_type = FRUIT_ORANGE_HALF;
         break;
-
     default:
         return;
     }
@@ -141,18 +145,25 @@ void wn_splitfruit(GameState *state, Fruit *f) {
         left->type = new_type;
         right->type = new_type;
     }
-    
+
     left->position = f->position;
     left->velocity.x = -8.0f;
     left->velocity.y = f->velocity.y;
     left->omega = f->omega * 4.0f;
     left->theta = f->theta;
     left->alive = true;
+    left->chirality = FRUIT_CHIRALITY_LEFT;
 
     right->position = f->position;
     right->velocity.x = 8.0f;
     right->velocity.y = f->velocity.y;
-    right->omega = -f->omega * 4.0f;
+    right->omega = f->omega * 4.0f;
     right->theta = f->theta;
     right->alive = true;
+
+    if (f->type == FRUIT_PINEAPPLE) {
+        right->chirality = FRUIT_CHIRALITY_LEFT;
+    } else {
+        right->chirality = FRUIT_CHIRALITY_RIGHT;
+    }
 }

@@ -16,6 +16,7 @@ int shooting = 0;
 int screen_width;
 int screen_height;
 Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
+Vector2 screen = (Vector2){.x = 0.0, .y = 0.0};
 float cutoffSlope = 1.0f;
 float minCutoffFrequency = 0.1f;
 
@@ -57,6 +58,11 @@ int main(int argc, char **argv) {
     ToggleFullscreen();
     screen_width = GetScreenWidth();
     screen_height = GetScreenHeight();
+    // Main Menu
+    int message = 0;
+    while(message != 1) {
+        message = menu();
+    }
     Camera3D camera = {0};
     camera.position = (Vector3){0.0f, 0.0f, 1.0f};
     camera.target = (Vector3){0.0f, 0.0f, -1.0f};
@@ -75,7 +81,7 @@ int main(int argc, char **argv) {
         if (use_wiimote) {
             float position[2] = {0.0, 0.0};
             poll_position(position);
-            Vector2 screen = (Vector2){.x = screen_width * (0.5 + position[0]),
+            screen = (Vector2){.x = screen_width * (0.5 + position[0]),
                                        .y = screen_height * (0.5 + position[1])};
         } else {
             screen = GetMousePosition();
@@ -116,7 +122,7 @@ int main(int argc, char **argv) {
                     break;
             }
 
-            wn_spawnfruit(&state, type);
+            wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
         }
 
         wn_update(&state);
