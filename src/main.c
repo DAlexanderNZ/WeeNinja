@@ -2,20 +2,22 @@
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 
-int shooting = 0;
 int screen_width;
 int screen_height;
-Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
-Vector2 screen = (Vector2){.x = 0.0, .y = 0.0};
 float cutoffSlope = 1.0f;
 float minCutoffFrequency = 0.1f;
 
+Vector2 get_wiimote_screen_position() {
+    float position[2] = {0};
+    poll_position(position);
+    Vector2 screen = {.x = screen_width * (position[0] + 0.5),
+                      .y = screen_height * (position[1] + 0.5)};
+    return screen;
+}
 void handle_button_event(uint16_t buttons) {
-    switch (buttons) {
-    case CWIID_BTN_A:
-        shooting = 1;
-    }
-    configure_filter(minCutoffFrequency, cutoffSlope);
+    button_event_t event = {.button = buttons,
+                            .position = get_wiimote_screen_position()};
+    push_queue(event);
 }
 
 void DrawSlicer(Camera camera, Vector2 at) {
@@ -43,7 +45,6 @@ int main(int argc, char **argv) {
     screen_width = GetScreenWidth();
     screen_height = GetScreenHeight();
     // Main Menu
-    int message = 0;
     Camera3D camera = {0};
     camera.position = (Vector3){0.0f, 0.0f, 1.0f};
     camera.target = (Vector3){0.0f, 0.0f, -1.0f};
@@ -55,15 +56,26 @@ int main(int argc, char **argv) {
     wn_state_init(&state);
 
     int shouldQuit = 0;
+    int shooting = 0;
+    Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
+    Vector2 screen = (Vector2){.x = 0.0, .y = 0.0};
 
     float fruit_timer = 0.0f;
     game_screen_t game_screen = MAIN_MENU;
     while (!WindowShouldClose() && !shouldQuit) {
         if (use_wiimote) {
-            float position[2] = {0.0, 0.0};
-            poll_position(position);
-            screen = (Vector2){.x = screen_width * (0.5 + position[0]),
-                               .y = screen_height * (0.5 + position[1])};
+            screen = get_wiimote_screen_position();
+            button_event_t events[QUEUE_LENGTH] = {0};
+            int queue_length = 0;
+            drain_queue(events, &queue_length);
+            for (int i = 0; i < queue_length; i++) {
+                switch (events[i].button) {
+                case CWIID_BTN_A:
+                    shooting = 1;
+                    shot_start = events[i].position;
+                    break;
+                }
+            }
         } else {
             screen = GetMousePosition();
             shot_start = GetMousePosition();
@@ -119,14 +131,9 @@ int main(int argc, char **argv) {
             wn_drawfruit(&state);
 
             EndMode3D();
-
-            /* shouldQuit = handleMsg(menu()); */
-
-            /* menu(); */
             EndDrawing();
             break;
         }
-        shooting = false;
     }
 
     if (use_wiimote) {

@@ -6,6 +6,7 @@
 #include "menu.h"
 #include "message.h"
 #include "model.h"
+#include "queue.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
 #include <raylib.h>
