@@ -16,7 +16,7 @@ Rectangle drawButton(struct MenuButton b) {
     return button;
 }
 
-int menu() {
+int menu(Vector2 mPos, int isMouseDown) {
     message m = none;
     BeginDrawing();
     ClearBackground(SKYBLUE);
@@ -31,8 +31,7 @@ int menu() {
         buttons[i] = drawButton(menuButtons[i]);
     }
     //Check for mouse click on button
-    if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-        Vector2 mPos = GetMousePosition();
+    if (isMouseDown) {
         if (CheckCollisionPointRec(mPos, buttons[0])) {
             m = menuPlay;
         } else if (CheckCollisionPointRec(mPos, buttons[1])) {

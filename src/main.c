@@ -12,6 +12,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+typedef enum GAME_SCREEN {
+    MAIN_MENU,
+    GAME
+} game_screen_t;
+
 int shooting = 0;
 int screen_width;
 int screen_height;
@@ -20,16 +25,10 @@ Vector2 screen = (Vector2){.x = 0.0, .y = 0.0};
 float cutoffSlope = 1.0f;
 float minCutoffFrequency = 0.1f;
 
-void print_buttons(uint16_t buttons) {
+void handle_button_event(uint16_t buttons) {
     switch (buttons) {
     case CWIID_BTN_A:
-        cutoffSlope += 0.1;
-    case CWIID_BTN_B:
-        cutoffSlope -= 0.1;
-    case CWIID_BTN_UP:
-        minCutoffFrequency += 0.1;
-    case CWIID_BTN_DOWN:
-        minCutoffFrequency -= 0.1;
+        shooting = 1;
     }
     configure_filter(minCutoffFrequency, cutoffSlope);
 }
@@ -47,7 +46,7 @@ int main(int argc, char **argv) {
     int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
     cwiid_wiimote_t* wiimote = NULL;
     if (use_wiimote) {
-        wiimote = init_input(&print_buttons);
+        wiimote = init_input(&handle_button_event);
         if (!wiimote) {
             return -1;
         }
@@ -60,9 +59,6 @@ int main(int argc, char **argv) {
     screen_height = GetScreenHeight();
     // Main Menu
     int message = 0;
-    while(message != 1) {
-        message = menu();
-    }
     Camera3D camera = {0};
     camera.position = (Vector3){0.0f, 0.0f, 1.0f};
     camera.target = (Vector3){0.0f, 0.0f, -1.0f};
@@ -76,8 +72,8 @@ int main(int argc, char **argv) {
     int shouldQuit = 0;
 
     float fruit_timer = 0.0f;
+    game_screen_t game_screen = MAIN_MENU;
     while (!WindowShouldClose() && !shouldQuit) {
-        /* PollInputEvents(); */
         if (use_wiimote) {
             float position[2] = {0.0, 0.0};
             poll_position(position);
@@ -88,52 +84,64 @@ int main(int argc, char **argv) {
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
         }
+        
+        switch (game_screen) {
+            case MAIN_MENU:
+                int menu_msg = menu(screen, shooting);
+                if (menu_msg == menuPlay) {
+                    game_screen = GAME;
+                }
+                break;
+            case GAME:
 
-        if (shooting) {
-            Ray ray = GetScreenToWorldRay(shot_start, camera);
-            wn_fruit_pick(&state, ray);
-            shooting = false;
+                if (shooting) {
+                    Ray ray = GetScreenToWorldRay(shot_start, camera);
+                    wn_fruit_pick(&state, ray);
+                    shooting = false;
+                }
+
+                BeginDrawing();
+                BeginMode3D(camera);
+
+                ClearBackground(WHITE);
+
+                DrawSlicer(camera, screen);
+
+                fruit_timer += GetFrameTime();
+                if (fruit_timer > 0.25f) {
+                    fruit_timer = 0.0f;
+
+                    int type;
+                    switch (rand() % 4) {
+                        case 0:
+                            type = FRUIT_APPLE;
+                            break;
+                        case 1:
+                            type = FRUIT_KIWIFRUIT;
+                            break;
+                        case 2:
+                            type = FRUIT_ORANGE;
+                            break;
+                        default:
+                            type = FRUIT_PINEAPPLE;
+                            break;
+                    }
+
+                    wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+                }
+
+                wn_update(&state);
+                wn_drawfruit(&state);
+
+                EndMode3D();
+
+                /* shouldQuit = handleMsg(menu()); */
+
+                /* menu(); */
+                EndDrawing();
+                break;
         }
-
-        BeginDrawing();
-        BeginMode3D(camera);
-
-        ClearBackground(WHITE);
-
-        DrawSlicer(camera, screen);
-
-        fruit_timer += GetFrameTime();
-        if (fruit_timer > 0.25f) {
-            fruit_timer = 0.0f;
-
-            int type;
-            switch (rand() % 4) {
-                case 0:
-                    type = FRUIT_APPLE;
-                    break;
-                case 1:
-                    type = FRUIT_KIWIFRUIT;
-                    break;
-                case 2:
-                    type = FRUIT_ORANGE;
-                    break;
-                default:
-                    type = FRUIT_PINEAPPLE;
-                    break;
-            }
-
-            wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
-        }
-
-        wn_update(&state);
-        wn_drawfruit(&state);
-
-        EndMode3D();
-
-        /* shouldQuit = handleMsg(menu()); */
-
-        /* menu(); */
-        EndDrawing();
+        shooting = false;
     }
 
     if (use_wiimote) {
