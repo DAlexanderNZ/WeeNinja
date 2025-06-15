@@ -78,6 +78,7 @@ static LazyMesh loaded_meshes[_N_FRUIT] = {
     [FRUIT_KIWIFRUIT_HALF] = {.status = NOT_LOADED, .data = {.nuh = 0}},
     [FRUIT_PINEAPPLE_HALF_TOP] = {.status = NOT_LOADED, .data = {.nuh = 0}},
     [FRUIT_PINEAPPLE_HALF_BOTTOM] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_BOMB] = {.status = NOT_LOADED, .data = {.nuh = 0}},
 };
 
 static void load_mesh(int fruit) {
