@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
                     break;
             }
 
-            wn_spawnfruit(&state, type);
+            wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
         }
 
         wn_update(&state);

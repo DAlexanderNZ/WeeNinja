@@ -38,6 +38,11 @@ enum FruitType {
   _N_FRUIT
 };
 
+enum FruitChirality {
+    FRUIT_CHIRALITY_LEFT = 0,
+    FRUIT_CHIRALITY_RIGHT = 1,
+};
+
 typedef struct Fruit {
     int     type;
     Vector2 position;
@@ -45,6 +50,7 @@ typedef struct Fruit {
     float   theta;
     float   omega;
     int     alive;
+    int     chirality;
 } Fruit;
 
 #endif
