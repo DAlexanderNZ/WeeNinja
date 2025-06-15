@@ -140,7 +140,11 @@ int main(int argc, char **argv) {
     }
 
     InitWindow(640, 480, "WeeNinja");
-
+    // Main Menu
+    int message = 0;
+    while(message != 1) {
+        message = menu();
+    }
     /* ToggleFullscreen(); */
     screen_extents.x = (float)GetScreenWidth();
     screen_extents.y = (float)GetScreenHeight();
