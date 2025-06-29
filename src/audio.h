@@ -16,4 +16,8 @@ enum MusicName { MUSIC_MENU = 0, _N_MUSIC };
 Sound get_sound(enum AudioName track);
 
 Music get_music(enum MusicName track);
+
+void unload_music();
+void unload_audio();
+
 #endif // AUDIO_H_

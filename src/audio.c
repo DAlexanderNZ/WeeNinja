@@ -22,6 +22,18 @@ static void load_music(enum MusicName track) {
   loaded_music[track] = LoadMusicStream(music[track]);
 }
 
+void unload_music() {
+  for (int i = 0; i < _N_MUSIC; i++) {
+    UnloadMusicStream(loaded_music[i]);
+  }
+}
+
+void unload_audio() {
+  for (int i = 0; i < _N_AUDIO; i++) {
+    UnloadSound(loaded_audio[i]);
+  }
+}
+
 Sound get_sound(enum AudioName track) {
   if (loaded_audio[track].frameCount == 0) {
     load_sound(track);

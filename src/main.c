@@ -197,14 +197,14 @@ int main(int argc, char **argv) {
         }
         }
     }
-    if (current_playing_track != _N_MUSIC) {
-        UnloadMusicStream(current_track);
-    }
 
     if (use_wiimote) {
         free_input();
     }
+    unload_music();
+    unload_audio();
     CloseAudioDevice();
     CloseWindow();
+
     return 0;
 }
