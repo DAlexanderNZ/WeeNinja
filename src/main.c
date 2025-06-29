@@ -65,6 +65,7 @@ int main(int argc, char **argv) {
     game_screen_t game_screen = MAIN_MENU;
     enum MusicName current_playing_track = _N_MUSIC;
     Music current_track = {0};
+    srand(time(NULL));
     while (!WindowShouldClose() && !shouldQuit) {
         if (current_playing_track != _N_MUSIC) {
             UpdateMusicStream(current_track);
@@ -91,8 +92,9 @@ int main(int argc, char **argv) {
 
         switch (game_screen) {
         case MAIN_MENU: {
-            if (current_playing_track != _N_MUSIC) {
+            if (current_playing_track == _N_MUSIC) {
                 current_track = get_music(MUSIC_MENU);
+                current_playing_track = MUSIC_MENU;
             }
             float music_length = GetMusicTimeLength(current_track);
             float played_music = GetMusicTimePlayed(current_track);
@@ -100,14 +102,13 @@ int main(int argc, char **argv) {
                 SeekMusicStream(current_track, 0.0f);
             }
             if (!IsMusicStreamPlaying(current_track)) {
-                printf("INFO: Playing new music!\n");
                 SetMusicVolume(current_track, 1.0);
                 PlayMusicStream(current_track);
-                printf("INFO: Playing music = %d\n",
-                       IsMusicStreamPlaying(current_track));
             }
             int menu_msg = menu(screen, shooting);
             if (menu_msg == menuPlay) {
+                current_playing_track = _N_MUSIC;
+                UnloadMusicStream(current_track);
                 game_screen = GAME;
             }
             break;
@@ -119,7 +120,26 @@ int main(int argc, char **argv) {
 
                 if (score < 0) {
                     wn_state_init(&state);
-                } else {
+                    Sound boom = get_sound(AUDIO_BOOM_1);
+                    int should_boom_variant = rand() % 10;
+                    printf("Should boom variant: %d\n", should_boom_variant);
+                    if (should_boom_variant == 1) {
+
+                        boom = get_sound(AUDIO_BOOM_2);
+                    }
+
+                    if (IsSoundPlaying(boom)) {
+                        StopSound(boom);
+                    }
+                    PlaySound(boom);
+                } else if (score > 0) {
+                    Sound slice =
+                        get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1) +
+                                  AUDIO_SLICE_1);
+                    if (IsSoundPlaying(slice)) {
+                        StopSound(slice);
+                    }
+                    PlaySound(slice);
                     state.score += score;
                 }
 
@@ -171,7 +191,10 @@ int main(int argc, char **argv) {
         }
         }
     }
-    UnloadMusicStream(current_track);
+    if (current_playing_track != _N_MUSIC) {
+        UnloadMusicStream(current_track);
+    }
+
     if (use_wiimote) {
         free_input();
     }
