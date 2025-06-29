@@ -81,6 +81,9 @@ int main(int argc, char **argv) {
             screen = GetMousePosition();
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+            if (IsKeyPressed(KEY_F11)) {
+                ToggleFullscreen();
+            }
         }
 
         switch (game_screen) {
@@ -88,6 +91,10 @@ int main(int argc, char **argv) {
                 int menu_msg = menu(screen, shooting);
                 if (menu_msg == menuPlay) {
                     game_screen = GAME;
+                }
+                else if (menu_msg == menuQuit) {
+                    CloseWindow();
+                    return 0;
                 }
                 break;
             }
