@@ -1,7 +1,7 @@
 # tool macros
 CC ?= # FILL: the compiler
 CXX ?= # FILL: the compiler
-CFLAGS := $$(pkg-config --cflags cwiid) $$(pkg-config --libs cwiid) -lm -lraylib # FILL: compile flags
+CFLAGS := -DENABLE_CWIID=1 $$(pkg-config --cflags cwiid) $$(pkg-config --libs cwiid) -lm -lraylib # FILL: compile flags
 CXXFLAGS := # FILL: compile flags
 DBGFLAGS := -g
 COBJFLAGS := $(CFLAGS) -c
