@@ -88,14 +88,26 @@ int main(int argc, char **argv) {
             screen = GetMousePosition();
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
+            if (IsKeyPressed(KEY_F11)) {
+                ToggleFullscreen();
+            }
         }
 
         switch (game_screen) {
-        case MAIN_MENU: {
+        case MAIN_MENU:
             if (current_playing_track == _N_MUSIC) {
                 current_track = get_music(MUSIC_MENU);
                 current_playing_track = MUSIC_MENU;
             }
+
+            int menu_msg = menu(screen, shooting);
+            if (menu_msg == menuPlay) {
+                game_screen = GAME;
+            } else if (menu_msg == menuQuit) {
+                CloseWindow();
+                shouldQuit = true;
+            }
+
             float music_length = GetMusicTimeLength(current_track);
             float played_music = GetMusicTimePlayed(current_track);
             if (music_length - played_music < 0.1f) {
@@ -105,14 +117,8 @@ int main(int argc, char **argv) {
                 SetMusicVolume(current_track, 1.0);
                 PlayMusicStream(current_track);
             }
-            int menu_msg = menu(screen, shooting);
-            if (menu_msg == menuPlay) {
-                current_playing_track = _N_MUSIC;
-                UnloadMusicStream(current_track);
-                game_screen = GAME;
-            }
             break;
-        }
+
         case GAME: {
             if (shooting) {
                 Ray ray = GetScreenToWorldRay(shot_start, camera);

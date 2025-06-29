@@ -2,11 +2,6 @@
 #include "main.h"
 #include <raylib.h>
 
-static MenuButton menuButtons[] = {
-    {{64.0f, 80.0f}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Play", 60, BLACK},
-    {{64.0f, 200.0f}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "High Scores", 60, BLACK},
-    {{64.0f, 320.0f}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Quit", 60, BLACK}};
-
 Rectangle drawButton(struct MenuButton b) {
     Rectangle button = {b.pos.x, b.pos.y, b.size.x , b.size.y};
     DrawRectangleRounded(button, b.round.x, b.round.y, b.buttonColor);
@@ -16,6 +11,24 @@ Rectangle drawButton(struct MenuButton b) {
     return button;
 }
 
+void CreateButtons(MenuButton* buttons) {
+    float width, height;
+    const float physcialOffset = M_PI * 2;
+    if (IsWindowFullscreen()) {
+        int monitor = GetCurrentMonitor();
+        width = (float)GetMonitorPhysicalWidth(monitor) * physcialOffset;
+        height = (float)GetMonitorPhysicalHeight(monitor) * physcialOffset;
+        printf("Hello");
+    } else {
+        width = GetScreenWidth();
+        height = GetScreenHeight();
+    }
+    //printf("%i, %f, %f", IsWindowFullscreen(), width, height);
+    buttons[0] = (MenuButton){{width / 2 - 266, height * 0.1666}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Play", 60, BLACK};
+    buttons[1] = (MenuButton){{width / 2 - 266, height * 0.4166}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "High Scores", 60, BLACK};
+    buttons[2] = (MenuButton){{width / 2 - 266, height * 0.6666}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Quit", 60, BLACK};
+}
+
 int menu(Vector2 mPos, int isMouseDown) {
     message m = none;
     BeginDrawing();
@@ -23,9 +36,10 @@ int menu(Vector2 mPos, int isMouseDown) {
     //Limit Menu Fps
     SetTargetFPS(60);
     DrawFPS(0,0);
-    // Menu objects for a 640x480
     // Play, High Score, Quit buttons
     int i;
+    MenuButton menuButtons[3];
+    CreateButtons(menuButtons);
     Rectangle buttons[3];
     for (i = 0; i < 3; i++) {
         buttons[i] = drawButton(menuButtons[i]);
