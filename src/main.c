@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
 
             int menu_msg = menu(screen, shooting);
             if (menu_msg == menuPlay) {
+                StopMusicStream(current_track);
                 game_screen = GAME;
             } else if (menu_msg == menuQuit) {
                 CloseWindow();
