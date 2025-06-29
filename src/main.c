@@ -60,10 +60,16 @@ int main(int argc, char **argv) {
     int shooting = 0;
     Vector2 shot_start = (Vector2){.x = 0.0, .y = 0.0};
     Vector2 screen = (Vector2){.x = 0.0, .y = 0.0};
-
+    InitAudioDevice();
     float fruit_timer = 0.0f;
     game_screen_t game_screen = MAIN_MENU;
+    enum MusicName current_playing_track = _N_MUSIC;
+    Music current_track = {0};
     while (!WindowShouldClose() && !shouldQuit) {
+        if (current_playing_track != _N_MUSIC) {
+            UpdateMusicStream(current_track);
+        }
+
         if (use_wiimote) {
             screen = get_wiimote_screen_position();
             button_event_t events[QUEUE_LENGTH] = {0};
@@ -84,77 +90,92 @@ int main(int argc, char **argv) {
         }
 
         switch (game_screen) {
-            case MAIN_MENU: {
-                int menu_msg = menu(screen, shooting);
-                if (menu_msg == menuPlay) {
-                    game_screen = GAME;
-                }
-                break;
+        case MAIN_MENU: {
+            if (current_playing_track != _N_MUSIC) {
+                current_track = get_music(MUSIC_MENU);
             }
-            case GAME: {
-                if (shooting) {
-                    Ray ray = GetScreenToWorldRay(shot_start, camera);
-                    int score = wn_fruit_pick(&state, ray);
-
-                    if (score < 0) {
-                        wn_state_init(&state);
-                    } else {
-                        state.score += score;
-                    }
-
-                    shooting = false;
-                }
-
-                BeginDrawing();
-                BeginMode3D(camera);
-
-                fruit_timer += GetFrameTime();
-                if (fruit_timer > 0.25f) {
-                    fruit_timer = 0.0f;
-
-                    int type;
-                    switch (rand() % 5) {
-                        case 0:
-                            type = FRUIT_APPLE;
-                            break;
-                        case 1:
-                            type = FRUIT_KIWIFRUIT;
-                            break;
-                        case 2:
-                            type = FRUIT_ORANGE;
-                            break;
-                        case 3:
-                            type = FRUIT_BOMB;
-                            break;
-                        case 4:
-                            type = FRUIT_PINEAPPLE;
-                            break;
-                    }
-
-                    wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
-                }
-
-                ClearBackground(WHITE);
-                wn_update(&state);
-                wn_drawfruit(&state);
-
-                DrawSlicer(camera, screen);
-                EndMode3D();
-
-                char scoreText[256] = { 0 };
-                snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
-                DrawText(scoreText, 0, 0, 16, RED);
-
-                EndDrawing();
-                break;
+            float music_length = GetMusicTimeLength(current_track);
+            float played_music = GetMusicTimePlayed(current_track);
+            if (music_length - played_music < 0.1f) {
+                SeekMusicStream(current_track, 0.0f);
             }
+            if (!IsMusicStreamPlaying(current_track)) {
+                printf("INFO: Playing new music!\n");
+                SetMusicVolume(current_track, 1.0);
+                PlayMusicStream(current_track);
+                printf("INFO: Playing music = %d\n",
+                       IsMusicStreamPlaying(current_track));
+            }
+            int menu_msg = menu(screen, shooting);
+            if (menu_msg == menuPlay) {
+                game_screen = GAME;
+            }
+            break;
+        }
+        case GAME: {
+            if (shooting) {
+                Ray ray = GetScreenToWorldRay(shot_start, camera);
+                int score = wn_fruit_pick(&state, ray);
+
+                if (score < 0) {
+                    wn_state_init(&state);
+                } else {
+                    state.score += score;
+                }
+
+                shooting = false;
+            }
+
+            BeginDrawing();
+            BeginMode3D(camera);
+
+            fruit_timer += GetFrameTime();
+            if (fruit_timer > 0.25f) {
+                fruit_timer = 0.0f;
+
+                int type;
+                switch (rand() % 5) {
+                case 0:
+                    type = FRUIT_APPLE;
+                    break;
+                case 1:
+                    type = FRUIT_KIWIFRUIT;
+                    break;
+                case 2:
+                    type = FRUIT_ORANGE;
+                    break;
+                case 3:
+                    type = FRUIT_BOMB;
+                    break;
+                case 4:
+                    type = FRUIT_PINEAPPLE;
+                    break;
+                }
+
+                wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
+            }
+
+            ClearBackground(WHITE);
+            wn_update(&state);
+            wn_drawfruit(&state);
+
+            DrawSlicer(camera, screen);
+            EndMode3D();
+
+            char scoreText[256] = {0};
+            snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
+            DrawText(scoreText, 0, 0, 16, RED);
+
+            EndDrawing();
+            break;
+        }
         }
     }
-
+    UnloadMusicStream(current_track);
     if (use_wiimote) {
         free_input();
     }
-
+    CloseAudioDevice();
     CloseWindow();
     return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef WEENINJA_MAIN_H
 #define WEENINJA_MAIN_H
 #include "application.h"
+#include "audio.h"
 #include "fruit.h"
 #include "input.h"
 #include "menu.h"
