@@ -1,5 +1,6 @@
 #include "main.h"
 #include "application.h"
+#include "audio.h"
 #include "fruit.h"
 #include "model.h"
 #include <raylib.h>
@@ -130,83 +131,92 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case GAME: {
-            if (shooting) {
-                Ray ray = GetScreenToWorldRay(shot_start, camera);
-                int score = wn_fruit_pick(&state, ray);
+            case GAME: {
+                if (current_playing_track == _N_MUSIC) {
+                    current_track = get_music(MUSIC_GAME_1);
+                    current_playing_track = MUSIC_GAME_1;
+                }
+                if (!IsMusicStreamPlaying(current_track)) {
+                    SetMusicVolume(current_track, 1.0);
+                    PlayMusicStream(current_track);
+                }
+                
+                if (shooting) {
+                    Ray ray = GetScreenToWorldRay(shot_start, camera);
+                    int score = wn_fruit_pick(&state, ray);
 
-                if (score < 0) {
-                    wn_state_init(&state);
-                    Sound boom = get_sound(AUDIO_BOOM_1);
-                    int should_boom_variant = rand() % 10;
-                    printf("Should boom variant: %d\n", should_boom_variant);
-                    if (should_boom_variant == 1) {
+                    if (score < 0) {
+                        wn_state_init(&state);
+                        Sound boom = get_sound(AUDIO_BOOM_1);
+                        int should_boom_variant = rand() % 10;
+                        printf("Should boom variant: %d\n", should_boom_variant);
+                        if (should_boom_variant == 1) {
 
-                        boom = get_sound(AUDIO_BOOM_2);
+                            boom = get_sound(AUDIO_BOOM_2);
+                        }
+
+                        if (IsSoundPlaying(boom)) {
+                            StopSound(boom);
+                        }
+                        PlaySound(boom);
+                    } else if (score > 0) {
+                        Sound slice =
+                            get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1 + 1) +
+                                      AUDIO_SLICE_1);
+                        if (IsSoundPlaying(slice)) {
+                            StopSound(slice);
+                        }
+                        PlaySound(slice);
+                        state.score += score;
                     }
 
-                    if (IsSoundPlaying(boom)) {
-                        StopSound(boom);
+                    ClearBackground(WHITE);
+                    wn_update(&state);
+                    wn_draw_instances(&state);
+                    wn_drawfruit(&state);
+
+                    DrawSlicer(camera, screen);
+                    EndMode3D();
+
+                    char scoreText[256] = { 0 };
+                    snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
+                    DrawText(scoreText, 0, 0, 16, RED);
+
+                    EndDrawing();
+                    break;
+                }
+
+                BeginDrawing();
+                BeginMode3D(camera);
+
+                fruit_timer += GetFrameTime();
+                if (fruit_timer > 0.25f) {
+                    fruit_timer = 0.0f;
+
+                    int type;
+                    switch (rand() % 5) {
+                        case 0:
+                            type = FRUIT_APPLE;
+                            break;
+                        case 1:
+                            type = FRUIT_KIWIFRUIT;
+                            break;
+                        case 2:
+                            type = FRUIT_ORANGE;
+                            break;
+                        case 3:
+                            type = FRUIT_BOMB;
+                            break;
+                        case 4:
+                            type = FRUIT_PINEAPPLE;
+                            break;
                     }
-                    PlaySound(boom);
-                } else if (score > 0) {
-                    Sound slice =
-                        get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1 + 1) +
-                                  AUDIO_SLICE_1);
-                    if (IsSoundPlaying(slice)) {
-                        StopSound(slice);
-                    }
-                    PlaySound(slice);
-                    state.score += score;
+
+                    wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
                 }
 
                 EndDrawing();
                 break;
-            }
-
-            BeginDrawing();
-            BeginMode3D(camera);
-
-            fruit_timer += GetFrameTime();
-            if (fruit_timer > 0.25f) {
-                fruit_timer = 0.0f;
-
-                int type;
-                switch (rand() % 5) {
-                case 0:
-                    type = FRUIT_APPLE;
-                    break;
-                case 1:
-                    type = FRUIT_KIWIFRUIT;
-                    break;
-                case 2:
-                    type = FRUIT_ORANGE;
-                    break;
-                case 3:
-                    type = FRUIT_BOMB;
-                    break;
-                case 4:
-                    type = FRUIT_PINEAPPLE;
-                    break;
-                }
-
-                wn_spawnfruit(&state, type, FRUIT_CHIRALITY_LEFT);
-            }
-
-            ClearBackground(WHITE);
-            wn_update(&state);
-            wn_draw_instances(&state);
-            wn_drawfruit(&state);
-
-            DrawSlicer(camera, screen);
-            EndMode3D();
-
-            char scoreText[256] = {0};
-            snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
-            DrawText(scoreText, 0, 0, 16, RED);
-
-            EndDrawing();
-            break;
         }
         }
         // Set the Window size to the render size so the mouse pos lines up for
