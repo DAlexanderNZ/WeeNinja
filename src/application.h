@@ -26,12 +26,25 @@
 #define WEENINJA_MAX_FRUIT 128
 #endif
 
+#ifndef WEENINJA_MAX_STATIC_MESHES
+#define WEENINJA_MAX_STATIC_MESHES 128
+#endif
+
+#ifndef WEENINJA_MAX_INSTANCES
+#define WEENINJA_MAX_INSTANCES 256
+#endif
+
 #include "fruit.h"
 
 typedef struct GameState {
     Fruit fruit[WEENINJA_MAX_FRUIT];
     int n_fruit;
     int score;
+
+    Model static_models[WEENINJA_MAX_STATIC_MESHES];
+    int instance_models[WEENINJA_MAX_INSTANCES];
+    Matrix instance_transforms[WEENINJA_MAX_INSTANCES];
+    int n_instances;
 } GameState;
 
 void wn_state_init(GameState *state);
@@ -40,6 +53,8 @@ void wn_spawnfruit(GameState *state, int type, int chirality);
 void wn_killfruit(GameState *state, Fruit *f);
 void wn_drawfruit(const GameState *state);
 int  wn_fruit_pick(GameState *state, Ray ray);
-int  wn_splitfruit(GameState* state, Fruit *f);
+int  wn_splitfruit(GameState *state, Fruit *f);
+void wn_drawmodel(const Model* m, const Matrix* xform);
+void wn_draw_instances(GameState *state);
 
 #endif

@@ -62,9 +62,12 @@ const static WNModel models[] = {
         {.model_file = "resource/goodart/pineapple_half_bottom.obj",
          .texture_file = "resource/goodart/pineapple.png"},
 
-    [FRUIT_BOMB] = {
-        .model_file = "resource/programmerart/bomb.obj",
-        .texture_file = "resource/programmerart/bomb.png"
+    [FRUIT_BOMB] = {.model_file = "resource/programmerart/bomb.obj",
+                    .texture_file = "resource/programmerart/bomb.png"},
+
+    [FRUIT_BAMBOO] = {
+        .model_file = "resource/programmerart/bamboo.obj",
+        .texture_file = "resource/programmerart/bamboo.png"
     }
 };
 
@@ -79,6 +82,7 @@ static LazyMesh loaded_meshes[_N_FRUIT] = {
     [FRUIT_PINEAPPLE_HALF_TOP] = {.status = NOT_LOADED, .data = {.nuh = 0}},
     [FRUIT_PINEAPPLE_HALF_BOTTOM] = {.status = NOT_LOADED, .data = {.nuh = 0}},
     [FRUIT_BOMB] = {.status = NOT_LOADED, .data = {.nuh = 0}},
+    [FRUIT_BAMBOO] = { .status = NOT_LOADED, .data = { .nuh = 0 } }
 };
 
 static void load_mesh(int fruit) {
