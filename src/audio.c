@@ -10,6 +10,7 @@ static const char *audio[] = {
     [AUDIO_BOOM_2] = "resource/goodart/boom_shut_up_dan_variant.wav"};
 static const char *music[] = {
     [MUSIC_MENU] = "resource/goodart/menu.wav",
+    [MUSIC_GAME_1] = "resource/goodart/game1.wav",
 };
 static Sound loaded_audio[_N_AUDIO] = {0};
 static Music loaded_music[_N_MUSIC] = {0};

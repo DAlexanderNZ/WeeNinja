@@ -11,7 +11,7 @@ enum AudioName {
     _N_AUDIO
 };
 
-enum MusicName { MUSIC_MENU = 0, _N_MUSIC };
+enum MusicName { MUSIC_MENU = 0, MUSIC_GAME_1 = 1, _N_MUSIC };
 
 Sound get_sound(enum AudioName track);
 

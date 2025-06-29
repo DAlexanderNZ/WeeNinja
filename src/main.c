@@ -1,5 +1,6 @@
 #include "main.h"
 #include "application.h"
+#include "audio.h"
 #include "fruit.h"
 #include "model.h"
 #include <raylib.h>
@@ -130,7 +131,22 @@ int main(int argc, char **argv) {
             }
             break;
 
-        case GAME: {
+            case GAME: {
+                if (current_playing_track == _N_MUSIC) {
+                    current_track = get_music(MUSIC_GAME_1);
+                    current_playing_track = MUSIC_GAME_1;
+                }
+
+                float music_length = GetMusicTimeLength(current_track);
+                float played_music = GetMusicTimePlayed(current_track);
+                if (music_length - played_music < 0.1f) {
+                    SeekMusicStream(current_track, 0.0f);
+                }
+                if (!IsMusicStreamPlaying(current_track)) {
+                    SetMusicVolume(current_track, 1.0);
+                    PlayMusicStream(current_track);
+                }
+                
             if (shooting) {
                 Ray ray = GetScreenToWorldRay(shot_start, camera);
                 int score = wn_fruit_pick(&state, ray);
