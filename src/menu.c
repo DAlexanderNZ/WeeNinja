@@ -12,18 +12,10 @@ Rectangle drawButton(struct MenuButton b) {
 }
 
 void CreateButtons(MenuButton* buttons) {
-    float width, height;
-    const float physcialOffset = M_PI * 2;
-    if (IsWindowFullscreen()) {
-        int monitor = GetCurrentMonitor();
-        width = (float)GetMonitorPhysicalWidth(monitor) * physcialOffset;
-        height = (float)GetMonitorPhysicalHeight(monitor) * physcialOffset;
-        printf("Hello");
-    } else {
-        width = GetScreenWidth();
-        height = GetScreenHeight();
-    }
-    //printf("%i, %f, %f", IsWindowFullscreen(), width, height);
+    int width, height;
+    width = GetRenderWidth();
+    height = GetRenderHeight();
+    //printf("%i, %i, %i", IsWindowFullscreen(), width, height);
     buttons[0] = (MenuButton){{width / 2 - 266, height * 0.1666}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Play", 60, BLACK};
     buttons[1] = (MenuButton){{width / 2 - 266, height * 0.4166}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "High Scores", 60, BLACK};
     buttons[2] = (MenuButton){{width / 2 - 266, height * 0.6666}, {512.0f, 80.0f}, {8.0f, 10}, WHITE, "Quit", 60, BLACK};
