@@ -13,6 +13,7 @@ int screen_height;
 float cutoffSlope = 1.0f;
 float minCutoffFrequency = 0.1f;
 
+#if ENABLE_CWIID
 Vector2 get_wiimote_screen_position() {
     float position[2] = {0};
     poll_position(position);
@@ -25,6 +26,7 @@ void handle_button_event(uint16_t buttons) {
                             .position = get_wiimote_screen_position()};
     push_queue(event);
 }
+#endif
 
 void DrawSlicer(Camera camera, Vector2 at) {
     Ray ray = GetScreenToWorldRay(at, camera);
@@ -36,6 +38,7 @@ void DrawSlicer(Camera camera, Vector2 at) {
 }
 
 int main(int argc, char **argv) {
+#if ENABLE_CWIID
     int use_wiimote = argc == 2 && !strncmp(argv[1], "YES", 3);
     cwiid_wiimote_t *wiimote = NULL;
     if (use_wiimote) {
@@ -44,6 +47,7 @@ int main(int argc, char **argv) {
             return -1;
         }
     }
+#endif
 
     InitWindow(640, 480, "WeeNinja");
     ToggleFullscreen();
@@ -82,6 +86,7 @@ int main(int argc, char **argv) {
             UpdateMusicStream(current_track);
         }
 
+#if ENABLE_CWIID
         if (use_wiimote) {
             screen = get_wiimote_screen_position();
             button_event_t events[QUEUE_LENGTH] = {0};
@@ -96,6 +101,7 @@ int main(int argc, char **argv) {
                 }
             }
         } else {
+#endif
             screen = GetMousePosition();
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
@@ -105,7 +111,9 @@ int main(int argc, char **argv) {
                 }
                 ToggleFullscreen();
             }
-        }
+#if ENABLE_CWIID
+            }
+#endif
 
         switch (game_screen) {
         case MAIN_MENU:
@@ -255,9 +263,12 @@ int main(int argc, char **argv) {
         }
     }
 
+#if ENABLE_CWIID
     if (use_wiimote) {
         free_input();
     }
+#endif
+
     unload_music();
     unload_audio();
     CloseAudioDevice();

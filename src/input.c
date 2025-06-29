@@ -1,6 +1,8 @@
 #include "input.h"
 #include "cwiid.h"
 
+#if ENABLE_CWIID
+
 /*
  * FOV values from NIH documentation
  * https://pmc.ncbi.nlm.nih.gov/articles/PMC7218719/#:~:text=With%20the%20filter%20applied%20and%20by%20default%2C,33%20degrees%20horizontally%20and%2023%20degrees%20vertically.
@@ -175,3 +177,5 @@ void free_input() {
     }
   }
 }
+
+#endif
