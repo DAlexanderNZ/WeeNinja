@@ -1,4 +1,5 @@
 #include "main.h"
+
 #include <raylib.h>
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
@@ -65,7 +66,11 @@ int main(int argc, char **argv) {
     enum MusicName current_playing_track = _N_MUSIC;
     Music current_track = {0};
     srand(time(NULL));
+    float fruit_hit_rate = 0.0f;
+    float alpha = 0.3;
+    float screen_shake_intensity = 0.0f;
     while (!WindowShouldClose() && !shouldQuit) {
+
         if (current_playing_track != _N_MUSIC) {
             UpdateMusicStream(current_track);
         }
@@ -121,15 +126,16 @@ int main(int argc, char **argv) {
             break;
 
         case GAME: {
+            int score = 0;
             if (shooting) {
                 Ray ray = GetScreenToWorldRay(shot_start, camera);
-                int score = wn_fruit_pick(&state, ray);
+                score = wn_fruit_pick(&state, ray);
 
                 if (score < 0) {
                     wn_state_init(&state);
                     Sound boom = get_sound(AUDIO_BOOM_1);
                     int should_boom_variant = rand() % 10;
-                    printf("Should boom variant: %d\n", should_boom_variant);
+                    fruit_hit_rate = 0.0f;
                     if (should_boom_variant == 1) {
 
                         boom = get_sound(AUDIO_BOOM_2);
@@ -139,6 +145,7 @@ int main(int argc, char **argv) {
                         StopSound(boom);
                     }
                     PlaySound(boom);
+                    screen_shake_intensity = 1.0f;
                 } else if (score > 0) {
                     Sound slice =
                         get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1 + 1) +
@@ -152,6 +159,21 @@ int main(int argc, char **argv) {
 
                 shooting = false;
             }
+            float current_rate = 1.0f / GetFrameTime(); // s^-1
+            if (score >= 0.0f) {
+                fruit_hit_rate = (1.0f - alpha) * fruit_hit_rate +
+                                 alpha * current_rate * score; // fs^-1 + fs^-1
+            }
+            if (fruit_hit_rate > 10.0f) {
+                screen_shake_intensity += fruit_hit_rate * 0.02f / current_rate;
+            } else if (screen_shake_intensity > 0) {
+                screen_shake_intensity *= 0.9f;
+            }
+            camera.position.x = screen_shake_intensity * 2.0f *
+                                (((float)rand() / (float)RAND_MAX) - 0.5f);
+
+            camera.position.y = screen_shake_intensity * 2.0f *
+                                (((float)rand() / (float)RAND_MAX) - 0.5f);
 
             BeginDrawing();
             BeginMode3D(camera);
