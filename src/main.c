@@ -70,10 +70,14 @@ int main(int argc, char **argv) {
     enum MusicName current_playing_track = _N_MUSIC;
     Music current_track = {0};
     srand(time(NULL));
+    float fruit_hit_rate = 0.0f;
+    float alpha = 0.3f;
+    float screen_shake_intensity = 0.0f;
 
     Model bamboo = get_fruit_model(FRUIT_BAMBOO);
 
     while (!WindowShouldClose() && !shouldQuit) {
+
         if (current_playing_track != _N_MUSIC) {
             UpdateMusicStream(current_track);
         }
@@ -131,31 +135,33 @@ int main(int argc, char **argv) {
             }
             break;
 
-            case GAME: {
-                if (current_playing_track == _N_MUSIC) {
-                    current_track = get_music(MUSIC_GAME_1);
-                    current_playing_track = MUSIC_GAME_1;
-                }
+        case GAME: {
+            int score = 0;
 
-                float music_length = GetMusicTimeLength(current_track);
-                float played_music = GetMusicTimePlayed(current_track);
-                if (music_length - played_music < 0.1f) {
-                    SeekMusicStream(current_track, 0.0f);
-                }
-                if (!IsMusicStreamPlaying(current_track)) {
-                    SetMusicVolume(current_track, 1.0);
-                    PlayMusicStream(current_track);
-                }
-                
+            if (current_playing_track == _N_MUSIC) {
+                current_track = get_music(MUSIC_GAME_1);
+                current_playing_track = MUSIC_GAME_1;
+            }
+
+            float music_length = GetMusicTimeLength(current_track);
+            float played_music = GetMusicTimePlayed(current_track);
+            if (music_length - played_music < 0.1f) {
+                SeekMusicStream(current_track, 0.0f);
+            }
+            if (!IsMusicStreamPlaying(current_track)) {
+                SetMusicVolume(current_track, 1.0);
+                PlayMusicStream(current_track);
+            }
+
             if (shooting) {
                 Ray ray = GetScreenToWorldRay(shot_start, camera);
-                int score = wn_fruit_pick(&state, ray);
+                score = wn_fruit_pick(&state, ray);
 
                 if (score < 0) {
                     wn_state_init(&state);
                     Sound boom = get_sound(AUDIO_BOOM_1);
                     int should_boom_variant = rand() % 10;
-                    printf("Should boom variant: %d\n", should_boom_variant);
+                    fruit_hit_rate = 0.0f;
                     if (should_boom_variant == 1) {
 
                         boom = get_sound(AUDIO_BOOM_2);
@@ -165,6 +171,7 @@ int main(int argc, char **argv) {
                         StopSound(boom);
                     }
                     PlaySound(boom);
+                    screen_shake_intensity = 1.0f;
                 } else if (score > 0) {
                     Sound slice =
                         get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1 + 1) +
@@ -175,10 +182,26 @@ int main(int argc, char **argv) {
                     PlaySound(slice);
                     state.score += score;
                 }
-
-                EndDrawing();
-                break;
             }
+            float frame_time = GetFrameTime();
+            if (frame_time < FLT_EPSILON) {
+                frame_time = FLT_EPSILON;
+            }
+            float current_rate = 1.0f / frame_time; // s^-1
+            if (score >= 0) {
+                fruit_hit_rate = (1.0f - alpha) * fruit_hit_rate +
+                                 alpha * current_rate * score; // fs^-1 + fs^-1
+            }
+            if (fruit_hit_rate > 10.0f) {
+                screen_shake_intensity += fruit_hit_rate * 0.02f / current_rate;
+            } else if (screen_shake_intensity > 0) {
+                screen_shake_intensity *= 0.9f;
+            }
+            camera.position.x = screen_shake_intensity * 2.0f *
+                                (((float)rand() / (float)RAND_MAX) - 0.5f);
+
+            camera.position.y = screen_shake_intensity * 2.0f *
+                                (((float)rand() / (float)RAND_MAX) - 0.5f);
 
             BeginDrawing();
             BeginMode3D(camera);
@@ -225,9 +248,9 @@ int main(int argc, char **argv) {
             break;
         }
         }
-        // Set the Window size to the render size so the mouse pos lines up for
-        // the slicer
-        if (IsWindowFullscreen()){
+        // Set the Window size to the render size so the mouse pos lines up
+        // for the slicer
+        if (IsWindowFullscreen()) {
             SetWindowSize(GetRenderWidth(), GetRenderHeight());
         }
     }
