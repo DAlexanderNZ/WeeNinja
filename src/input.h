@@ -1,5 +1,8 @@
 #ifndef INPUT_H
 #define INPUT_H
+
+#if ENABLE_CWIID
+
 #include "SF1eFilter.h"
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
@@ -16,4 +19,7 @@ void configure_filter(float minCutoffFrequency, float cutoffSlope);
 void free_input();
 void position_to_screen_space(const float position[], int width, int height,
                               float screen[]);
+
+#endif
+
 #endif

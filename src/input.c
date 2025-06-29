@@ -1,7 +1,7 @@
+#if ENABLE_CWIID
+
 #include "input.h"
 #include "cwiid.h"
-
-#if ENABLE_CWIID
 
 /*
  * FOV values from NIH documentation

@@ -5,6 +5,7 @@
 #include "model.h"
 #include <raylib.h>
 #include <raymath.h>
+#include <stdio.h>
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 

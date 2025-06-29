@@ -8,8 +8,12 @@
 #include "message.h"
 #include "model.h"
 #include "queue.h"
+
+#if ENABLE_CWIID
 #include <bluetooth/bluetooth.h>
 #include <cwiid.h>
+#endif
+
 #include <raylib.h>
 #include <raymath.h>
 #include <stdlib.h>
