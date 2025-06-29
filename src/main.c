@@ -102,6 +102,7 @@ int main(int argc, char **argv) {
             int menu_msg = menu(screen, shooting);
             if (menu_msg == menuPlay) {
                 StopMusicStream(current_track);
+                current_playing_track = _N_MUSIC;
                 game_screen = GAME;
             } else if (menu_msg == menuQuit) {
                 CloseWindow();
@@ -196,8 +197,9 @@ int main(int argc, char **argv) {
             break;
         }
         }
-        // Set the Window size to the render size so the mouse pos lines up for the slicer
-        SetWindowSize(GetRenderWidth(),GetRenderHeight());
+        // Set the Window size to the render size so the mouse pos lines up for
+        // the slicer
+        SetWindowSize(GetRenderWidth(), GetRenderHeight());
     }
 
     if (use_wiimote) {
