@@ -28,6 +28,27 @@ void wn_state_init(GameState *state) {
     for (int i = 0; i < WEENINJA_MAX_FRUIT; i++) {
         state->fruit[i].alive = false;
     }
+
+    for (int i = 0; i < WEENINJA_MAX_INSTANCES; i++) {
+        state->instance_models[i] = -1;
+    }
+
+    /* put bamboo */
+    state->static_models[0] = get_fruit_model(FRUIT_BAMBOO);
+    state->n_instances = 0;
+    for (int i = 0; i < 25; i++) {
+        state->instance_models[i] = 0;
+
+        float x = ((float)i - 12.5f) * 1.5f;
+        float height = 1.0f + ((((float)rand() / (float)RAND_MAX) - 0.5f) / 2.0f);
+        Matrix xform = MatrixScale(0.3f, 0.4f * height, 0.3f);
+        xform = MatrixMultiply(xform, MatrixTranslate(0.0, 0.0, 8.0f * (((float)rand() / (float)RAND_MAX) - 0.5f)));
+        xform = MatrixMultiply(xform, MatrixRotateY(rand()));
+        xform = MatrixMultiply(xform, MatrixTranslate(x, -16.0f, -30.0f));
+
+        state->instance_transforms[i] = xform;
+        state->n_instances++;
+    }
 }
 
 void wn_spawnfruit(GameState *state, int type, int chirality) {
@@ -69,6 +90,16 @@ void wn_update(GameState *state) {
     }
 }
 
+void wn_draw_instances(GameState* state) {
+    for (int i = 0; i < state->n_instances; i++) {
+        Matrix xform = state->instance_transforms[i];
+        int model_index = state->instance_models[i];
+        Model model = state->static_models[model_index];
+        wn_drawmodel(&state->static_models[model_index],
+                     &state->instance_transforms[i]);
+    }
+}
+
 void wn_drawfruit(const GameState *state) {
     for (int i = 0; i < WEENINJA_MAX_FRUIT; i++) {
         const Fruit *f = &state->fruit[i];
@@ -89,10 +120,14 @@ void wn_drawfruit(const GameState *state) {
         xform = MatrixMultiply(
             xform, MatrixTranslate(f->position.x, f->position.y, -20.0));
 
-        for (int j = 0; j < m.meshCount; j++) {
-            int material_index = m.meshMaterial[j];
-            DrawMesh(m.meshes[j], m.materials[material_index], xform);
-        }
+        wn_drawmodel(&m, &xform);
+    }
+}
+
+void wn_drawmodel(const Model* m, const Matrix* xform) {
+    for (int i = 0; i < m->meshCount; i++) {
+        int material_index = m->meshMaterial[i];
+        DrawMesh(m->meshes[i], m->materials[material_index], *xform);
     }
 }
 

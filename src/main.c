@@ -1,6 +1,10 @@
 #include "main.h"
-
+#include "application.h"
+#include "audio.h"
+#include "fruit.h"
+#include "model.h"
 #include <raylib.h>
+#include <raymath.h>
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 
@@ -69,6 +73,9 @@ int main(int argc, char **argv) {
     float fruit_hit_rate = 0.0f;
     float alpha = 0.3;
     float screen_shake_intensity = 0.0f;
+
+    Model bamboo = get_fruit_model(FRUIT_BAMBOO);
+
     while (!WindowShouldClose() && !shouldQuit) {
 
         if (current_playing_track != _N_MUSIC) {
@@ -93,6 +100,9 @@ int main(int argc, char **argv) {
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
             if (IsKeyPressed(KEY_F11)) {
+                if (IsWindowFullscreen()) {
+                    SetWindowSize(640, 480);
+                }
                 ToggleFullscreen();
             }
         }
@@ -127,6 +137,22 @@ int main(int argc, char **argv) {
 
         case GAME: {
             int score = 0;
+
+            if (current_playing_track == _N_MUSIC) {
+                current_track = get_music(MUSIC_GAME_1);
+                current_playing_track = MUSIC_GAME_1;
+            }
+
+            float music_length = GetMusicTimeLength(current_track);
+            float played_music = GetMusicTimePlayed(current_track);
+            if (music_length - played_music < 0.1f) {
+                SeekMusicStream(current_track, 0.0f);
+            }
+            if (!IsMusicStreamPlaying(current_track)) {
+                SetMusicVolume(current_track, 1.0);
+                PlayMusicStream(current_track);
+            }
+
             if (shooting) {
                 Ray ray = GetScreenToWorldRay(shot_start, camera);
                 score = wn_fruit_pick(&state, ray);
@@ -156,8 +182,6 @@ int main(int argc, char **argv) {
                     PlaySound(slice);
                     state.score += score;
                 }
-
-                shooting = false;
             }
             float current_rate = 1.0f / GetFrameTime(); // s^-1
             if (score >= 0.0f) {
@@ -206,6 +230,7 @@ int main(int argc, char **argv) {
 
             ClearBackground(WHITE);
             wn_update(&state);
+            wn_draw_instances(&state);
             wn_drawfruit(&state);
 
             DrawSlicer(camera, screen);
@@ -219,9 +244,11 @@ int main(int argc, char **argv) {
             break;
         }
         }
-        // Set the Window size to the render size so the mouse pos lines up for
-        // the slicer
-        SetWindowSize(GetRenderWidth(), GetRenderHeight());
+        // Set the Window size to the render size so the mouse pos lines up
+        // for the slicer
+        if (IsWindowFullscreen()) {
+            SetWindowSize(GetRenderWidth(), GetRenderHeight());
+        }
     }
 
     if (use_wiimote) {
