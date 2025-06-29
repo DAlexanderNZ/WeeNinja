@@ -204,6 +204,7 @@ int main(int argc, char **argv) {
 
             ClearBackground(WHITE);
             wn_update(&state);
+            wn_draw_instances(&state);
             wn_drawfruit(&state);
 
             DrawSlicer(camera, screen);
