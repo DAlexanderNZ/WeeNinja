@@ -15,3 +15,12 @@
 `make` in the root dir of the project. The binary will be in `./bin`
 ### Run
 To use a wiimote pass `YES` when executing the binary. You will have 5 seconds to pair the wiimote otherwise the game will quit.
+
+## Cross-compilation for Win32
+
+ 1. Have mingw and a build of raylib for windows installed
+ 2. Build using `make -f Makefile.w32`
+ 3. ???
+ 4. Profit.
+
+NB. libcwiid is disabled for windows builds
