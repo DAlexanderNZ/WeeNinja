@@ -71,7 +71,7 @@ int main(int argc, char **argv) {
     Music current_track = {0};
     srand(time(NULL));
     float fruit_hit_rate = 0.0f;
-    float alpha = 0.3;
+    float alpha = 0.3f;
     float screen_shake_intensity = 0.0f;
 
     Model bamboo = get_fruit_model(FRUIT_BAMBOO);
@@ -183,8 +183,12 @@ int main(int argc, char **argv) {
                     state.score += score;
                 }
             }
-            float current_rate = 1.0f / GetFrameTime(); // s^-1
-            if (score >= 0.0f) {
+            float frame_time = GetFrameTime();
+            if (frame_time < FLT_EPSILON) {
+                frame_time = FLT_EPSILON;
+            }
+            float current_rate = 1.0f / frame_time; // s^-1
+            if (score >= 0) {
                 fruit_hit_rate = (1.0f - alpha) * fruit_hit_rate +
                                  alpha * current_rate * score; // fs^-1 + fs^-1
             }
