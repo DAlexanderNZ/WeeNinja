@@ -95,6 +95,9 @@ int main(int argc, char **argv) {
             shot_start = GetMousePosition();
             shooting = IsMouseButtonPressed(MOUSE_BUTTON_LEFT);
             if (IsKeyPressed(KEY_F11)) {
+                if (IsWindowFullscreen()) {
+                    SetWindowSize(640, 480);
+                }
                 ToggleFullscreen();
             }
         }
@@ -220,7 +223,9 @@ int main(int argc, char **argv) {
         }
         // Set the Window size to the render size so the mouse pos lines up for
         // the slicer
-        SetWindowSize(GetRenderWidth(), GetRenderHeight());
+        if (IsWindowFullscreen()){
+            SetWindowSize(GetRenderWidth(), GetRenderHeight());
+        }
     }
 
     if (use_wiimote) {
