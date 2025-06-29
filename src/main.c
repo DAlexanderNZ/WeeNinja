@@ -160,18 +160,6 @@ int main(int argc, char **argv) {
                     state.score += score;
                 }
 
-                ClearBackground(WHITE);
-                wn_update(&state);
-                wn_draw_instances(&state);
-                wn_drawfruit(&state);
-
-                DrawSlicer(camera, screen);
-                EndMode3D();
-
-                char scoreText[256] = { 0 };
-                snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
-                DrawText(scoreText, 0, 0, 16, RED);
-
                 EndDrawing();
                 break;
             }
