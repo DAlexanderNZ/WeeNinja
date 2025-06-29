@@ -1,7 +1,7 @@
-#include "main.h"
 #include "message.h"
 
-int handleMsg(message msg) {
+
+int handleMsg(enum message msg) {
   switch (msg) {
   case none:
     break;
