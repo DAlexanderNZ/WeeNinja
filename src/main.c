@@ -41,7 +41,6 @@ int main(int argc, char **argv) {
     }
 
     InitWindow(640, 480, "WeeNinja");
-
     ToggleFullscreen();
     screen_width = GetScreenWidth();
     screen_height = GetScreenHeight();
@@ -197,6 +196,8 @@ int main(int argc, char **argv) {
             break;
         }
         }
+        // Set the Window size to the render size so the mouse pos lines up for the slicer
+        SetWindowSize(GetRenderWidth(),GetRenderHeight());
     }
 
     if (use_wiimote) {
