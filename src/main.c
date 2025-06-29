@@ -184,8 +184,8 @@ int main(int argc, char **argv) {
                 }
             }
             float frame_time = GetFrameTime();
-            if (frame_time < FLT_EPSILON) {
-                frame_time = FLT_EPSILON;
+            if (frame_time < 1e-6) {
+                frame_time = 1e-6;
             }
             float current_rate = 1.0f / frame_time; // s^-1
             if (score >= 0) {
