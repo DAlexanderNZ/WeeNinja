@@ -1,5 +1,9 @@
 #include "main.h"
+#include "application.h"
+#include "fruit.h"
+#include "model.h"
 #include <raylib.h>
+#include <raymath.h>
 
 typedef enum GAME_SCREEN { MAIN_MENU, GAME } game_screen_t;
 
@@ -65,6 +69,9 @@ int main(int argc, char **argv) {
     enum MusicName current_playing_track = _N_MUSIC;
     Music current_track = {0};
     srand(time(NULL));
+
+    Model bamboo = get_fruit_model(FRUIT_BAMBOO);
+
     while (!WindowShouldClose() && !shouldQuit) {
         if (current_playing_track != _N_MUSIC) {
             UpdateMusicStream(current_track);
@@ -150,7 +157,20 @@ int main(int argc, char **argv) {
                     state.score += score;
                 }
 
-                shooting = false;
+                ClearBackground(WHITE);
+                wn_update(&state);
+                wn_draw_instances(&state);
+                wn_drawfruit(&state);
+
+                DrawSlicer(camera, screen);
+                EndMode3D();
+
+                char scoreText[256] = { 0 };
+                snprintf(scoreText, sizeof scoreText, "Score: %d", state.score);
+                DrawText(scoreText, 0, 0, 16, RED);
+
+                EndDrawing();
+                break;
             }
 
             BeginDrawing();
