@@ -140,7 +140,7 @@ int main(int argc, char **argv) {
                     PlaySound(boom);
                 } else if (score > 0) {
                     Sound slice =
-                        get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1) +
+                        get_sound(rand() % (AUDIO_SLICE_4 - AUDIO_SLICE_1 + 1) +
                                   AUDIO_SLICE_1);
                     if (IsSoundPlaying(slice)) {
                         StopSound(slice);
